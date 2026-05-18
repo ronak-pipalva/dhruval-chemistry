@@ -11,7 +11,7 @@ serve(async (req) => {
 
     let message = "";
     if (table === "demo_requests") {
-      message = `*New Demo Request!* ⚗️\n\n*Name:* ${record.name}\n*Standard:* ${record.standard}\n*Board:* ${record.board}\n*Group:* ${record.group_name}\n*WhatsApp:* ${record.whatsapp}\n*City:* ${record.city}\n\nCheck dashboard for details.`;
+      message = `*New Demo Request!* ⚗️\n\n*Name:* ${record.name}\n*Standard:* ${record.standard}\n*Board:* ${record.board}\n*Prep Type:* ${record.group_name}\n*WhatsApp:* ${record.whatsapp}\n*City:* ${record.city}\n\nCheck dashboard for details.`;
     } else if (table === "contact_messages") {
       message = `*New Contact Message!* ✉️\n\n*Name:* ${record.name}\n*Email:* ${record.email}\n*Message:* ${record.message}`;
     }

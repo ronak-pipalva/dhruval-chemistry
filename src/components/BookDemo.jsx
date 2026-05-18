@@ -12,7 +12,7 @@ const BookDemo = () => {
     gender: "",
     medium: "",
     standard: "",
-    group: "",
+    prepType: "",
     whatsapp: "",
     city: "",
     message: "",
@@ -31,7 +31,7 @@ const BookDemo = () => {
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.medium) newErrors.medium = "Medium is required";
     if (!formData.standard) newErrors.standard = "Standard is required";
-    if (!formData.group) newErrors.group = "Group is required";
+    if (!formData.prepType) newErrors.prepType = "Preparation type is required";
     if (!formData.whatsapp) {
       newErrors.whatsapp = "WhatsApp number is required";
     } else if (!/^\d{10}$/.test(formData.whatsapp)) {
@@ -56,7 +56,7 @@ const BookDemo = () => {
         gender: formData.gender,
         medium: formData.medium,
         standard: formData.standard,
-        group_name: formData.group,
+        group_name: formData.prepType,
         whatsapp: formData.whatsapp,
         city: formData.city,
         message: formData.message,
@@ -276,24 +276,25 @@ const BookDemo = () => {
                 )}
               </div>
 
-              {/* Group */}
+              {/* Prep Type */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Group *
+                  Preparation Type *
                 </label>
                 <select
-                  name="group"
-                  value={formData.group}
+                  name="prepType"
+                  value={formData.prepType}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.group ? "border-red-500 bg-red-50" : "border-gray-200"} focus:border-primary outline-none transition-all appearance-none bg-white`}
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.prepType ? "border-red-500 bg-red-50" : "border-gray-200"} focus:border-primary outline-none transition-all appearance-none bg-white`}
                 >
-                  <option value="">Select Group</option>
-                  <option value="Group A (Science)">Group A (Science)</option>
-                  <option value="Group B (Science)">Group B (Science)</option>
+                  <option value="">Select Preparation Type</option>
+                  <option value="Board Only">Board Only</option>
+                  <option value="Board + NEET">Board + NEET</option>
+                  <option value="Board + JEE">Board + JEE</option>
                 </select>
-                {errors.group && (
+                {errors.prepType && (
                   <p className="text-red-500 text-xs mt-1 font-medium">
-                    {errors.group}
+                    {errors.prepType}
                   </p>
                 )}
               </div>
