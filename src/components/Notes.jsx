@@ -4,7 +4,7 @@ import { useNotes } from "../context/NotesContext";
 import { Download, FileText, Search } from "lucide-react";
 
 const Notes = () => {
-  const { notes } = useNotes();
+  const { notes, loading } = useNotes();
   const [activeTab, setActiveTab] = useState("11th");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -17,9 +17,7 @@ const Notes = () => {
   });
 
   const handleDownload = (file, chapter) => {
-    // In a real app, we'd check if file exists
-    // For now, we'll just open it if it starts with /notes/
-    if (file && file.startsWith("/notes/")) {
+    if (file) {
       window.open(file, "_blank");
     } else {
       alert(`Notes for "${chapter}" are coming soon! 🔜`);
@@ -74,68 +72,82 @@ const Notes = () => {
           </div>
         </div>
 
-        {/* Notes Grid */}
-        <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredNotes.length > 0 ? (
-              filteredNotes.map((note) => (
-                <motion.div
-                  key={note.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col"
-                >
-                  <div className="p-6 flex-grow flex flex-col relative">
-                    {/* Notebook Paper Lines Decoration */}
-                    <div
-                      className="absolute inset-x-0 top-0 h-full pointer-events-none opacity-[0.03]"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(#000 1px, transparent 1px)",
-                        backgroundSize: "100% 2rem",
-                      }}
-                    />
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-500 font-medium">
+              Loading study materials...
+            </p>
+          </div>
+        ) : (
+          /* Notes Grid */
+          <motion.div
+            layout
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredNotes.length > 0 ? (
+                filteredNotes.map((note) => (
+                  <motion.div
+                    key={note.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col"
+                  >
+                    <div className="p-6 flex-grow flex flex-col relative">
+                      {/* Notebook Paper Lines Decoration */}
+                      <div
+                        className="absolute inset-x-0 top-0 h-full pointer-events-none opacity-[0.03]"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(#000 1px, transparent 1px)",
+                          backgroundSize: "100% 2rem",
+                        }}
+                      />
 
-                    <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="p-3 bg-light-accent text-primary rounded-xl">
-                        <FileText size={28} />
+                      <div className="flex justify-between items-start mb-4 relative z-10">
+                        <div className="p-3 bg-light-accent text-primary rounded-xl">
+                          <FileText size={28} />
+                        </div>
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-dark mb-6 leading-tight group-hover:text-primary transition-colors relative z-10">
+                        {note.chapter}
+                      </h3>
+
+                      <div className="mt-auto relative z-10">
+                        <button
+                          onClick={() =>
+                            handleDownload(note.file_url, note.chapter)
+                          }
+                          className="w-full py-3 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 font-bold rounded-xl flex items-center justify-center gap-2 border border-gray-200 transition-all duration-300 group-hover:border-primary"
+                        >
+                          <Download size={18} />
+                          Download PDF
+                        </button>
                       </div>
                     </div>
-
-                    <h3 className="text-2xl font-bold text-dark mb-6 leading-tight group-hover:text-primary transition-colors relative z-10">
-                      {note.chapter}
-                    </h3>
-
-                    <div className="mt-auto relative z-10">
-                      <button
-                        onClick={() => handleDownload(note.file, note.chapter)}
-                        className="w-full py-3 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 font-bold rounded-xl flex items-center justify-center gap-2 border border-gray-200 transition-all duration-300 group-hover:border-primary"
-                      >
-                        <Download size={18} />
-                        Download PDF
-                      </button>
-                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full py-20 text-center">
+                  <div className="text-gray-400 mb-4 flex justify-center">
+                    <FileText size={64} />
                   </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="col-span-full py-20 text-center">
-                <div className="text-gray-400 mb-4 flex justify-center">
-                  <FileText size={64} />
+                  <h3 className="text-xl font-bold text-gray-600">
+                    No notes found
+                  </h3>
+                  <p className="text-gray-500">
+                    Try adjusting your filters or search query.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-600">
-                  No notes found
-                </h3>
-                <p className="text-gray-500">
-                  Try adjusting your filters or search query.
-                </p>
-              </div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
       </div>
     </section>
   );

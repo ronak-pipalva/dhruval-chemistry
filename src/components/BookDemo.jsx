@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle, MessageSquare } from "lucide-react";
+import { useNotes } from "../context/NotesContext";
 
 const BookDemo = () => {
+  const { submitDemoRequest } = useNotes();
   const [formData, setFormData] = useState({
     name: "",
     board: "",
+    otherBoard: "",
     gender: "",
     medium: "",
     standard: "",
@@ -17,11 +20,14 @@ const BookDemo = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Name is required";
     if (!formData.board) newErrors.board = "Board is required";
+    if (formData.board === "Other" && !formData.otherBoard)
+      newErrors.board = "Please specify board";
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.medium) newErrors.medium = "Medium is required";
     if (!formData.standard) newErrors.standard = "Standard is required";
@@ -37,14 +43,35 @@ const BookDemo = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      setIsSubmitted(true);
-      window.scrollTo({
-        top: document.getElementById("demo").offsetTop - 80,
-        behavior: "smooth",
+      setIsSubmitting(true);
+      const displayBoard =
+        formData.board === "Other" ? formData.otherBoard : formData.board;
+
+      const result = await submitDemoRequest({
+        name: formData.name,
+        board: displayBoard,
+        gender: formData.gender,
+        medium: formData.medium,
+        standard: formData.standard,
+        group_name: formData.group,
+        whatsapp: formData.whatsapp,
+        city: formData.city,
+        message: formData.message,
       });
+
+      if (result.success) {
+        setIsSubmitted(true);
+        window.scrollTo({
+          top: document.getElementById("demo").offsetTop - 80,
+          behavior: "smooth",
+        });
+      } else {
+        alert("Failed to submit: " + result.error);
+      }
+      setIsSubmitting(false);
     }
   };
 
@@ -329,10 +356,15 @@ const BookDemo = () => {
 
             <button
               type="submit"
-              className="w-full py-4 bg-primary hover:bg-dark text-white font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all duration-300"
+              disabled={isSubmitting}
+              className="w-full py-4 bg-primary hover:bg-dark text-white font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all duration-300 disabled:opacity-50"
             >
-              <Send size={20} />
-              Submit Demo Request
+              {isSubmitting ? (
+                <span className="animate-spin">⌛</span>
+              ) : (
+                <Send size={20} />
+              )}
+              {isSubmitting ? "Submitting..." : "Submit Demo Request"}
             </button>
           </form>
         </div>

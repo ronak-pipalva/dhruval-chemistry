@@ -2,9 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Send } from "lucide-react";
 import { teacher } from "../data/teacherData";
+import { useNotes } from "../context/NotesContext";
 
 const Contact = () => {
+  const { submitContactMessage } = useNotes();
   const [isSent, setIsSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
 
   const contactCards = [
     {
@@ -27,10 +35,25 @@ const Contact = () => {
     },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSent(true);
-    setTimeout(() => setIsSent(false), 5000);
+    setIsSubmitting(true);
+
+    const result = await submitContactMessage(formData);
+
+    if (result.success) {
+      setIsSent(true);
+      setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setIsSent(false), 5000);
+    } else {
+      alert("Failed to send message: " + result.error);
+    }
+    setIsSubmitting(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -99,6 +122,9 @@ const Contact = () => {
                       </label>
                       <input
                         type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
                         required
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all"
                         placeholder="Enter your name"
@@ -110,6 +136,9 @@ const Contact = () => {
                       </label>
                       <input
                         type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
                         required
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all"
                         placeholder="Enter your email"
@@ -121,6 +150,9 @@ const Contact = () => {
                       Message
                     </label>
                     <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
                       required
                       rows="5"
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all resize-none"
@@ -129,10 +161,15 @@ const Contact = () => {
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-4 bg-primary hover:bg-dark text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="w-full py-4 bg-primary hover:bg-dark text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    <Send size={18} />
-                    Send Message
+                    {isSubmitting ? (
+                      <span className="animate-spin">⌛</span>
+                    ) : (
+                      <Send size={18} />
+                    )}
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </button>
                 </form>
               )}
