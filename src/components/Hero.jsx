@@ -5,7 +5,7 @@ import { teacher } from "../data/teacherData";
 const Hero = () => {
   const [typedText, setTypedText] = useState("");
   const subjects = useMemo(
-    () => ["Physical Chemistry", "Organic Chemistry", "Inorganic Chemistry"],
+    () => ["Organic Chemistry", "Inorganic Chemistry", "Physical Chemistry"],
     [],
   );
   const [subjectIndex, setSubjectIndex] = useState(0);

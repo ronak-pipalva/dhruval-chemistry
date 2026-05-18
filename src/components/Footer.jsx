@@ -1,6 +1,21 @@
-import { Link } from "react-router-dom";
 import { teacher } from "../data/teacherData";
-import { Globe, Camera, Send, Code, Settings } from "lucide-react";
+
+const LinkedinIcon = ({ size = 20 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect width="4" height="12" x="2" y="9" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -14,10 +29,10 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: <Camera size={20} />, href: "#" },
-    { icon: <Globe size={20} />, href: "#" },
-    { icon: <Send size={20} />, href: "#" },
-    { icon: <Code size={20} />, href: "#" },
+    {
+      icon: <LinkedinIcon size={20} />,
+      href: "https://www.linkedin.com/in/dhruval-talsaniya-243171223",
+    },
   ];
 
   const scrollToSection = (e, href) => {
@@ -112,13 +127,6 @@ const Footer = () => {
             © {currentYear} {teacher.name} | Chemistry Educator, Rajkot. All
             Rights Reserved.
           </p>
-          <Link
-            to="/admin"
-            className="flex items-center gap-2 text-gray-500 hover:text-primary text-sm transition-colors"
-          >
-            <Settings size={14} />
-            Admin Panel
-          </Link>
         </div>
       </div>
     </footer>

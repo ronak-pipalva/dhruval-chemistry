@@ -6,19 +6,14 @@ import { Download, FileText, Search } from "lucide-react";
 const Notes = () => {
   const { notes } = useNotes();
   const [activeTab, setActiveTab] = useState("11th");
-  const [activeFilter, setActiveFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-
-  const subjects = ["All", "Physical", "Organic", "Inorganic"];
 
   const filteredNotes = notes.filter((note) => {
     const matchesTab = note.standard === activeTab;
-    const matchesFilter =
-      activeFilter === "All" || note.subject === activeFilter;
     const matchesSearch = note.chapter
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesTab && matchesFilter && matchesSearch;
+    return matchesTab && matchesSearch;
   });
 
   const handleDownload = (file, chapter) => {
@@ -28,19 +23,6 @@ const Notes = () => {
       window.open(file, "_blank");
     } else {
       alert(`Notes for "${chapter}" are coming soon! 🔜`);
-    }
-  };
-
-  const getSubjectColor = (subject) => {
-    switch (subject) {
-      case "Physical":
-        return "bg-blue-500";
-      case "Organic":
-        return "bg-green-500";
-      case "Inorganic":
-        return "bg-purple-500";
-      default:
-        return "bg-primary";
     }
   };
 
@@ -75,33 +57,17 @@ const Notes = () => {
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
-          <div className="flex flex-wrap justify-center gap-2">
-            {subjects.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => setActiveFilter(sub)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all duration-300 ${
-                  activeFilter === sub
-                    ? "border-primary bg-primary text-white shadow-md"
-                    : "border-gray-200 text-gray-500 hover:border-primary/30"
-                }`}
-              >
-                {sub}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative w-full md:w-64">
+        {/* Search */}
+        <div className="flex justify-center mb-10">
+          <div className="relative w-full max-w-md">
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
             />
             <input
               type="text"
               placeholder="Search chapters..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -122,9 +88,6 @@ const Notes = () => {
                   transition={{ duration: 0.3 }}
                   className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col"
                 >
-                  {/* Top Color Bar */}
-                  <div className={`h-2 ${getSubjectColor(note.subject)}`} />
-
                   <div className="p-6 flex-grow flex flex-col relative">
                     {/* Notebook Paper Lines Decoration */}
                     <div
@@ -137,17 +100,12 @@ const Notes = () => {
                     />
 
                     <div className="flex justify-between items-start mb-4 relative z-10">
-                      <div className="p-2 bg-light-accent text-primary rounded-lg">
-                        <FileText size={24} />
+                      <div className="p-3 bg-light-accent text-primary rounded-xl">
+                        <FileText size={28} />
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white ${getSubjectColor(note.subject)}`}
-                      >
-                        {note.subject}
-                      </span>
                     </div>
 
-                    <h3 className="text-xl font-bold text-dark mb-4 leading-tight group-hover:text-primary transition-colors relative z-10">
+                    <h3 className="text-2xl font-bold text-dark mb-6 leading-tight group-hover:text-primary transition-colors relative z-10">
                       {note.chapter}
                     </h3>
 

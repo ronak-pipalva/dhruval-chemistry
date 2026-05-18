@@ -11,7 +11,6 @@ const AdminDashboard = () => {
 
   const [newNote, setNewNote] = useState({
     standard: "11th",
-    subject: "Physical",
     chapter: "",
     file: "",
   });
@@ -34,11 +33,10 @@ const AdminDashboard = () => {
     if (!newNote.chapter) return;
     addNote({
       ...newNote,
-      file: `/notes/${newNote.standard}_${newNote.subject.toLowerCase()}_${newNote.chapter.toLowerCase().replace(/ /g, "")}.pdf`,
+      file: `/notes/${newNote.standard}_${newNote.chapter.toLowerCase().replace(/ /g, "")}.pdf`,
     });
     setNewNote({
       standard: "11th",
-      subject: "Physical",
       chapter: "",
       file: "",
     });
@@ -132,7 +130,7 @@ const AdminDashboard = () => {
           </h2>
           <form
             onSubmit={handleAddSubmit}
-            className="grid md:grid-cols-4 gap-4"
+            className="grid md:grid-cols-3 gap-4"
           >
             <div className="md:col-span-1">
               <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
@@ -147,22 +145,6 @@ const AdminDashboard = () => {
               >
                 <option value="11th">11th Standard</option>
                 <option value="12th">12th Standard</option>
-              </select>
-            </div>
-            <div className="md:col-span-1">
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                Subject
-              </label>
-              <select
-                value={newNote.subject}
-                onChange={(e) =>
-                  setNewNote({ ...newNote, subject: e.target.value })
-                }
-                className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
-              >
-                <option value="Physical">Physical</option>
-                <option value="Organic">Organic</option>
-                <option value="Inorganic">Inorganic</option>
               </select>
             </div>
             <div className="md:col-span-1">
@@ -202,9 +184,6 @@ const AdminDashboard = () => {
                     Standard
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                    Subject
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
                     Chapter
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">
@@ -240,36 +219,6 @@ const AdminDashboard = () => {
                         ) : (
                           <span className="font-semibold text-dark">
                             {note.standard}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {editingId === note.id ? (
-                          <select
-                            value={editFormData.subject}
-                            onChange={(e) =>
-                              setEditFormData({
-                                ...editFormData,
-                                subject: e.target.value,
-                              })
-                            }
-                            className="px-2 py-1 rounded border outline-none"
-                          >
-                            <option value="Physical">Physical</option>
-                            <option value="Organic">Organic</option>
-                            <option value="Inorganic">Inorganic</option>
-                          </select>
-                        ) : (
-                          <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white ${
-                              note.subject === "Physical"
-                                ? "bg-blue-500"
-                                : note.subject === "Organic"
-                                  ? "bg-green-500"
-                                  : "bg-purple-500"
-                            }`}
-                          >
-                            {note.subject}
                           </span>
                         )}
                       </td>

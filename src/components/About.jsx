@@ -43,7 +43,7 @@ const About = () => {
               ))}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-12 text-left">
+            <div className="text-left">
               {/* Skills */}
               <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
                 <h3 className="text-xl font-bold text-dark mb-6 flex items-center gap-2">
@@ -60,33 +60,6 @@ const About = () => {
                     >
                       {skill}
                     </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                <h3 className="text-xl font-bold text-dark mb-6 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-accent/10 text-accent rounded-lg flex items-center justify-center text-sm">
-                    🌐
-                  </span>
-                  Languages Known
-                </h3>
-                <div className="space-y-4">
-                  {teacher.languages.map((lang, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100 shadow-sm"
-                    >
-                      <span className="font-bold text-dark">{lang}</span>
-                      <span className="text-xl">
-                        {lang === "Gujarati"
-                          ? "🇮🇳"
-                          : lang === "Hindi"
-                            ? "🇮🇳"
-                            : "🇬🇧"}
-                      </span>
-                    </div>
                   ))}
                 </div>
               </div>

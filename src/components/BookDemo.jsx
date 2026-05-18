@@ -56,7 +56,9 @@ const BookDemo = () => {
     }
   };
 
-  const waMessage = `Hi Dhruval Sir! I submitted a demo request. My name is ${formData.name}, Standard: ${formData.standard}, Board: ${formData.board}`;
+  const displayBoard =
+    formData.board === "Other" ? formData.otherBoard : formData.board;
+  const waMessage = `Hi Dhruval Sir! I submitted a demo request. My name is ${formData.name}, Standard: ${formData.standard}, Board: ${displayBoard}`;
   const waLink = `https://wa.me/919624835292?text=${encodeURIComponent(waMessage)}`;
 
   if (isSubmitted) {
@@ -135,17 +137,33 @@ const BookDemo = () => {
                 <label className="block text-sm font-bold text-gray-700 mb-2">
                   Board *
                 </label>
-                <select
-                  name="board"
-                  value={formData.board}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.board ? "border-red-500 bg-red-50" : "border-gray-200"} focus:border-primary outline-none transition-all appearance-none bg-white`}
-                >
-                  <option value="">Select Board</option>
-                  <option value="GSEB">GSEB</option>
-                  <option value="CBSE">CBSE</option>
-                  <option value="ICSE">ICSE</option>
-                </select>
+                <div className="space-y-3">
+                  <select
+                    name="board"
+                    value={formData.board}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-3 rounded-xl border ${errors.board ? "border-red-500 bg-red-50" : "border-gray-200"} focus:border-primary outline-none transition-all appearance-none bg-white`}
+                  >
+                    <option value="">Select Board</option>
+                    <option value="GSEB">GSEB</option>
+                    <option value="CBSE">CBSE</option>
+                    <option value="ICSE">ICSE</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  {formData.board === "Other" && (
+                    <motion.input
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      type="text"
+                      name="otherBoard"
+                      placeholder="Specify your board"
+                      value={formData.otherBoard || ""}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all text-sm"
+                      required
+                    />
+                  )}
+                </div>
                 {errors.board && (
                   <p className="text-red-500 text-xs mt-1 font-medium">
                     {errors.board}

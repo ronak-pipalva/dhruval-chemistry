@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotes } from "../context/NotesContext";
 import { motion } from "framer-motion";
-import { Lock, Mail, Eye, EyeOff, AlertCircle, ArrowLeft } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -45,17 +45,6 @@ const AdminLogin = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md"
       >
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors mb-6 group"
-        >
-          <ArrowLeft
-            size={18}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
-          Back to Portfolio
-        </button>
-
         <motion.div
           animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : {}}
           className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-100"
