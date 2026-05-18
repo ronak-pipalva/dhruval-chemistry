@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, CheckCircle, MessageSquare } from "lucide-react";
+import { Send, CheckCircle } from "lucide-react";
 import { useNotes } from "../context/NotesContext";
 
 const BookDemo = () => {
@@ -83,11 +83,6 @@ const BookDemo = () => {
     }
   };
 
-  const displayBoard =
-    formData.board === "Other" ? formData.otherBoard : formData.board;
-  const waMessage = `Hi Dhruval Sir! I submitted a demo request. My name is ${formData.name}, Standard: ${formData.standard}, Board: ${displayBoard}`;
-  const waLink = `https://wa.me/919624835292?text=${encodeURIComponent(waMessage)}`;
-
   if (isSubmitted) {
     return (
       <section id="demo" className="py-20 bg-white">
@@ -105,15 +100,6 @@ const BookDemo = () => {
               Your demo request has been received. Dhruval Sir will contact you
               on WhatsApp within 24 hours. Get ready to master Chemistry! ⚗️
             </p>
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-full transition-all duration-300 shadow-lg"
-            >
-              <MessageSquare size={20} />
-              Message on WhatsApp
-            </a>
           </motion.div>
         </div>
       </section>
