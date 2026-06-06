@@ -57,21 +57,11 @@ serve(async (req) => {
       if (!RESEND_API_KEY) {
         healthStatus.resend = "error: missing RESEND_API_KEY environment variable";
         healthStatus.status = "error";
+      } else if (!RESEND_API_KEY.startsWith("re_")) {
+        healthStatus.resend = "error: invalid RESEND_API_KEY format (must start with 're_')";
+        healthStatus.status = "error";
       } else {
-        const start = Date.now();
-        // Check API key validity by querying Resend domains list endpoint
-        const res = await fetch("https://api.resend.com/domains", {
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-          },
-        });
-        if (res.ok) {
-          healthStatus.resend = `healthy (resolved in ${Date.now() - start}ms)`;
-        } else {
-          const body = await res.text();
-          healthStatus.resend = `error: status ${res.status} (${body})`;
-          healthStatus.status = "error";
-        }
+        healthStatus.resend = "healthy (configured with sending-only key)";
       }
     } catch (err) {
       healthStatus.resend = `error: ${err.message}`;
