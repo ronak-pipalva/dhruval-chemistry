@@ -14,6 +14,7 @@ import Footer from "./components/Footer";
 import FloatingButtons from "./components/FloatingButtons";
 import AdminLogin from "./admin/AdminLogin";
 import AdminDashboard from "./admin/AdminDashboard";
+import HealthCheck from "./components/HealthCheck";
 
 function Portfolio() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/" element={<Portfolio />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/health" element={<HealthCheck />} />
         </Routes>
       </BrowserRouter>
     </NotesProvider>

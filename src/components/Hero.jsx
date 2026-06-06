@@ -122,7 +122,7 @@ const Hero = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full animate-[spin_12s_linear_infinite_reverse]" />
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 z-10 grid md:grid-cols-2 gap-12 items-center">
+      <div className="container mx-auto px-4 md:px-6 z-10 grid md:grid-cols-2 gap-6 lg:gap-12 items-center">
         {/* Left Content */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -133,7 +133,7 @@ const Hero = () => {
             <span className="animate-pulse mr-2">●</span> {typedText}
             <span className="ml-1 border-r-2 border-accent animate-ping" />
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
             {teacher.tagline}
           </h1>
           <p className="text-lg md:text-xl text-light-accent/80 mb-8 max-w-lg leading-relaxed">
@@ -163,7 +163,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative flex justify-center"
         >
-          <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full p-2 border-2 border-accent/30">
+          <div className="relative w-56 h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full p-2 border-2 border-accent/30">
             <div className="absolute inset-0 rounded-full border-2 border-accent border-dashed animate-spin-slow opacity-50" />
             <div className="absolute -inset-4 rounded-full border border-white/10 animate-[ping_4s_linear_infinite]" />
             <img

@@ -14,6 +14,10 @@ import {
   Mail,
   Upload,
   Calendar,
+  Folder,
+  FolderOpen,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -39,6 +43,31 @@ const AdminDashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [expandedChapters, setExpandedChapters] = useState({});
+
+  const toggleChapter = (key) => {
+    setExpandedChapters((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const getCleanFilename = (url) => {
+    if (!url) return "Document.pdf";
+    try {
+      const filename = decodeURIComponent(url.split("/").pop());
+      const underscoreIndex = filename.indexOf("_");
+      if (underscoreIndex !== -1) {
+        const prefix = filename.substring(0, underscoreIndex);
+        if (/^\d{13}$/.test(prefix) || /^\d+$/.test(prefix)) {
+          return filename.substring(underscoreIndex + 1);
+        }
+      }
+      return filename;
+    } catch (e) {
+      return "Document.pdf";
+    }
+  };
 
   useEffect(() => {
     if (!isAdminLoggedIn) {
@@ -58,9 +87,9 @@ const AdminDashboard = () => {
   };
 
   const uploadFile = async (file, standard, chapter) => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${standard}_${chapter.toLowerCase().replace(/ /g, "_")}_${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const sanitizedChapter = chapter.replace(/\/+/g, "-");
+    // Place inside folders in the storage bucket, prefix filename with timestamp to prevent collisions
+    const filePath = `${standard}/${sanitizedChapter}/${Date.now()}_${file.name}`;
 
     const { error: uploadError } = await supabase.storage
       .from("notes")
@@ -313,113 +342,113 @@ const AdminDashboard = () => {
               </form>
             </div>
 
-            {/* Notes Table */}
+            {/* Notes Grouped by Folders */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-gray-100">
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                        Standard
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
-                        Chapter
-                      </th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    <AnimatePresence>
-                      {notes.map((note) => (
-                        <motion.tr
-                          key={note.id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="hover:bg-gray-50/50 transition-colors"
+              <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                <h3 className="font-bold text-dark">Notes Folder Structure</h3>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {(() => {
+                  // Group notes by standard and chapter
+                  const groupedAdminNotes = notes.reduce((acc, note) => {
+                    const key = `${note.standard} - ${note.chapter}`;
+                    if (!acc[key]) {
+                      acc[key] = [];
+                    }
+                    acc[key].push(note);
+                    return acc;
+                  }, {});
+
+                  const keys = Object.keys(groupedAdminNotes);
+
+                  if (keys.length === 0) {
+                    return (
+                      <div className="p-10 text-center text-gray-400">
+                        No notes uploaded yet.
+                      </div>
+                    );
+                  }
+
+                  return keys.map((groupKey) => {
+                    const [std, chapter] = groupKey.split(" - ");
+                    const notesInGroup = groupedAdminNotes[groupKey];
+                    const isExpanded = !!expandedChapters[groupKey];
+
+                    return (
+                      <div key={groupKey} className="flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() => toggleChapter(groupKey)}
+                          className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors w-full text-left"
                         >
-                          <td className="px-6 py-4">
-                            {editingId === note.id ? (
-                              <select
-                                value={editFormData.standard}
-                                onChange={(e) =>
-                                  setEditFormData({
-                                    ...editFormData,
-                                    standard: e.target.value,
-                                  })
-                                }
-                                className="px-2 py-1 rounded border outline-none"
-                              >
-                                <option value="11th">11th</option>
-                                <option value="12th">12th</option>
-                              </select>
-                            ) : (
-                              <span className="font-semibold text-dark">
-                                {note.standard}
+                          <div className="flex items-center gap-3">
+                            <span className="p-2 bg-primary/10 text-primary rounded-lg">
+                              {isExpanded ? <FolderOpen size={18} /> : <Folder size={18} />}
+                            </span>
+                            <div>
+                              <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full mr-2">
+                                {std}
                               </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            {editingId === note.id ? (
-                              <input
-                                type="text"
-                                value={editFormData.chapter}
-                                onChange={(e) =>
-                                  setEditFormData({
-                                    ...editFormData,
-                                    chapter: e.target.value,
-                                  })
-                                }
-                                className="w-full px-2 py-1 rounded border outline-none focus:border-primary"
-                              />
-                            ) : (
-                              <span className="text-gray-600 font-medium">
-                                {note.chapter}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              {editingId === note.id ? (
-                                <>
-                                  <button
-                                    onClick={saveEdit}
-                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                  >
-                                    <Save size={18} />
-                                  </button>
-                                  <button
-                                    onClick={cancelEdit}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  >
-                                    <X size={18} />
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => startEdit(note)}
-                                    className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                  >
-                                    <Edit2 size={18} />
-                                  </button>
-                                  <button
-                                    onClick={() => deleteNote(note.id)}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  >
-                                    <Trash2 size={18} />
-                                  </button>
-                                </>
-                              )}
+                              <span className="font-semibold text-dark">{chapter}</span>
                             </div>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </AnimatePresence>
-                  </tbody>
-                </table>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-400 font-bold">
+                              {notesInGroup.length} {notesInGroup.length === 1 ? "file" : "files"}
+                            </span>
+                            {isExpanded ? (
+                              <ChevronUp size={16} className="text-gray-400" />
+                            ) : (
+                              <ChevronDown size={16} className="text-gray-400" />
+                            )}
+                          </div>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="bg-gray-50/30 px-6 py-2 border-t border-gray-50">
+                            <table className="w-full text-left">
+                              <thead>
+                                <tr className="border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                  <th className="py-2">File Name</th>
+                                  <th className="py-2 text-right">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-50">
+                                {notesInGroup.map((note) => (
+                                  <tr key={note.id} className="hover:bg-gray-50/50">
+                                    <td className="py-3 text-sm text-gray-600 font-medium">
+                                      <div className="flex items-center gap-2">
+                                        <FileText size={14} className="text-gray-400" />
+                                        <a
+                                          href={note.file_url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="hover:text-primary hover:underline truncate max-w-md"
+                                        >
+                                          {getCleanFilename(note.file_url)}
+                                        </a>
+                                      </div>
+                                    </td>
+                                    <td className="py-3 text-right">
+                                      <button
+                                        type="button"
+                                        onClick={() => deleteNote(note.id)}
+                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        title="Delete note"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
               </div>
             </div>
           </>
@@ -494,38 +523,75 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "messages" && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {contactMessages.map((msg) => (
-              <div
-                key={msg.id}
-                className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 relative group"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="p-3 bg-primary/10 text-primary rounded-xl">
-                    <Users size={20} />
-                  </div>
-                  <span className="text-[10px] text-gray-400 font-bold uppercase">
-                    {new Date(msg.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <h3 className="font-bold text-dark mb-1">{msg.name}</h3>
-                <div className="text-xs text-gray-500 mb-4">{msg.email}</div>
-                <p className="text-gray-600 text-sm leading-relaxed bg-gray-50 p-4 rounded-2xl italic">
-                  "{msg.message}"
-                </p>
-                <a
-                  href={`mailto:${msg.email}`}
-                  className="mt-6 w-full py-2 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all"
-                >
-                  <Mail size={14} /> Reply via Email
-                </a>
-              </div>
-            ))}
-            {contactMessages.length === 0 && (
-              <div className="col-span-full py-20 text-center text-gray-400">
-                No messages yet.
-              </div>
-            )}
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                      Sender
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                      Message Details
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                      Contact
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                      Date
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {contactMessages.map((msg) => (
+                    <tr
+                      key={msg.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-dark">{msg.name}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-gray-600 text-sm max-w-md break-words italic">
+                          "{msg.message}"
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <a
+                            href={`https://wa.me/91${msg.email}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-green-600 font-bold hover:underline text-sm"
+                          >
+                            <span>📱</span> {msg.email}
+                          </a>
+                          <a
+                            href={`tel:${msg.email}`}
+                            className="text-xs text-gray-400 hover:text-primary transition-colors"
+                          >
+                            📞 Call: {msg.email}
+                          </a>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-xs text-gray-400">
+                        {new Date(msg.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                  {contactMessages.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="4"
+                        className="px-6 py-10 text-center text-gray-400"
+                      >
+                        No messages yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

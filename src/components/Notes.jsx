@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotes } from "../context/NotesContext";
-import { Download, FileText, Search } from "lucide-react";
+import { Download, FileText, Search, Folder, FolderOpen, ChevronDown, ChevronUp } from "lucide-react";
 
 const Notes = () => {
   const { notes, loading } = useNotes();
   const [activeTab, setActiveTab] = useState("11th");
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedChapters, setExpandedChapters] = useState({});
 
   const filteredNotes = notes.filter((note) => {
     const matchesTab = note.standard === activeTab;
@@ -15,6 +16,42 @@ const Notes = () => {
       .includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
+
+  // Group notes by chapter
+  const groupedNotes = filteredNotes.reduce((groups, note) => {
+    const chapter = note.chapter || "General";
+    if (!groups[chapter]) {
+      groups[chapter] = [];
+    }
+    groups[chapter].push(note);
+    return groups;
+  }, {});
+
+  const chaptersList = Object.keys(groupedNotes);
+
+  const toggleChapter = (chapter) => {
+    setExpandedChapters((prev) => ({
+      ...prev,
+      [chapter]: !prev[chapter],
+    }));
+  };
+
+  const getCleanFilename = (url) => {
+    if (!url) return "Document.pdf";
+    try {
+      const filename = decodeURIComponent(url.split("/").pop());
+      const underscoreIndex = filename.indexOf("_");
+      if (underscoreIndex !== -1) {
+        const prefix = filename.substring(0, underscoreIndex);
+        if (/^\d{13}$/.test(prefix) || /^\d+$/.test(prefix)) {
+          return filename.substring(underscoreIndex + 1);
+        }
+      }
+      return filename;
+    } catch (e) {
+      return "Document.pdf";
+    }
+  };
 
   const handleDownload = (file, chapter) => {
     if (file) {
@@ -80,58 +117,107 @@ const Notes = () => {
             </p>
           </div>
         ) : (
-          /* Notes Grid */
+          /* Notes Folders Grid */
           <motion.div
             layout
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             <AnimatePresence mode="popLayout">
-              {filteredNotes.length > 0 ? (
-                filteredNotes.map((note) => (
-                  <motion.div
-                    key={note.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col"
-                  >
-                    <div className="p-6 flex-grow flex flex-col relative">
-                      {/* Notebook Paper Lines Decoration */}
-                      <div
-                        className="absolute inset-x-0 top-0 h-full pointer-events-none opacity-[0.03]"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(#000 1px, transparent 1px)",
-                          backgroundSize: "100% 2rem",
-                        }}
-                      />
+              {chaptersList.length > 0 ? (
+                chaptersList.map((chapter) => {
+                  const chapterNotes = groupedNotes[chapter];
+                  const isExpanded = !!expandedChapters[chapter];
+                  return (
+                    <motion.div
+                      key={chapter}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group flex flex-col h-fit"
+                    >
+                      <div className="p-6 flex-grow flex flex-col relative">
+                        {/* Notebook Paper Lines Decoration */}
+                        <div
+                          className="absolute inset-x-0 top-0 h-full pointer-events-none opacity-[0.03]"
+                          style={{
+                            backgroundImage:
+                              "linear-gradient(#000 1px, transparent 1px)",
+                            backgroundSize: "100% 2rem",
+                          }}
+                        />
 
-                      <div className="flex justify-between items-start mb-4 relative z-10">
-                        <div className="p-3 bg-light-accent text-primary rounded-xl">
-                          <FileText size={28} />
+                        <div className="flex justify-between items-center mb-4 relative z-10">
+                          <div className="p-3 bg-light-accent text-primary rounded-xl flex items-center justify-center">
+                            {isExpanded ? (
+                              <FolderOpen size={28} />
+                            ) : (
+                              <Folder size={28} />
+                            )}
+                          </div>
+                          <span className="text-xs bg-primary/10 text-primary font-bold px-3 py-1 rounded-full">
+                            {chapterNotes.length} {chapterNotes.length === 1 ? "file" : "files"}
+                          </span>
                         </div>
-                      </div>
 
-                      <h3 className="text-2xl font-bold text-dark mb-6 leading-tight group-hover:text-primary transition-colors relative z-10">
-                        {note.chapter}
-                      </h3>
+                        <h3 className="text-xl font-bold text-dark mb-4 leading-tight group-hover:text-primary transition-colors relative z-10">
+                          {chapter}
+                        </h3>
 
-                      <div className="mt-auto relative z-10">
                         <button
-                          onClick={() =>
-                            handleDownload(note.file_url, note.chapter)
-                          }
-                          className="w-full py-3 bg-gray-50 hover:bg-primary hover:text-white text-gray-600 font-bold rounded-xl flex items-center justify-center gap-2 border border-gray-200 transition-all duration-300 group-hover:border-primary"
+                          onClick={() => toggleChapter(chapter)}
+                          className="w-full py-2 px-4 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold rounded-xl flex items-center justify-between border border-gray-200 transition-all duration-300 relative z-10"
                         >
-                          <Download size={18} />
-                          Download PDF
+                          <span className="text-sm">
+                            {isExpanded ? "Hide materials" : "View materials"}
+                          </span>
+                          {isExpanded ? (
+                            <ChevronUp size={16} />
+                          ) : (
+                            <ChevronDown size={16} />
+                          )}
                         </button>
+
+                        {/* Files List Accordion */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden mt-4 pt-4 border-t border-gray-100 space-y-2 relative z-10"
+                            >
+                              {chapterNotes.map((note) => (
+                                <div
+                                  key={note.id}
+                                  className="flex items-center justify-between p-3 bg-light-accent/40 hover:bg-light-accent rounded-xl border border-gray-100/50 transition-all duration-200 group/file"
+                                >
+                                  <div className="flex items-center gap-2 max-w-[70%]">
+                                    <FileText size={16} className="text-primary flex-shrink-0" />
+                                    <span className="text-xs font-semibold text-gray-700 truncate">
+                                      {getCleanFilename(note.file_url)}
+                                    </span>
+                                  </div>
+                                  <button
+                                    onClick={() =>
+                                      handleDownload(note.file_url, chapter)
+                                    }
+                                    className="p-2 bg-white text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-all group-hover/file:border-primary border border-gray-200"
+                                    title="Download PDF"
+                                  >
+                                    <Download size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </div>
-                  </motion.div>
-                ))
+                    </motion.div>
+                  );
+                })
               ) : (
                 <div className="col-span-full py-20 text-center">
                   <div className="text-gray-400 mb-4 flex justify-center">

@@ -10,7 +10,7 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
+    phone: "",
     message: "",
   });
 
@@ -37,13 +37,21 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.phone.length !== 10) {
+      alert("Please enter a valid 10-digit phone number.");
+      return;
+    }
     setIsSubmitting(true);
 
-    const result = await submitContactMessage(formData);
+    const result = await submitContactMessage({
+      name: formData.name,
+      email: formData.phone, // Map phone to email column of the DB
+      message: formData.message,
+    });
 
     if (result.success) {
       setIsSent(true);
-      setFormData({ name: "", email: "", message: "" });
+      setFormData({ name: "", phone: "", message: "" });
       setTimeout(() => setIsSent(false), 5000);
     } else {
       alert("Failed to send message: " + result.error);
@@ -53,7 +61,12 @@ const Contact = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone") {
+      const cleaned = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, [name]: cleaned }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -132,16 +145,16 @@ const Contact = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Your Email
+                        Your Phone
                       </label>
                       <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all"
-                        placeholder="Enter your email"
+                        placeholder="10-digit phone number"
                       />
                     </div>
                   </div>

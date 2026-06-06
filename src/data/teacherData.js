@@ -12,16 +12,16 @@ export const teacher = {
     "Passionate and knowledgeable chemistry teacher with strong skills in designing engaging lesson plans, fostering critical thinking, and adapting teaching methods to suit diverse learning styles. Proficient in using technology to enhance learning and committed to creating an interactive and supportive classroom environment that inspires students to excel.",
   stats: [
     { label: "Years Experience", value: "2+" },
-    { label: "Students Taught", value: "500+" },
+    { label: "Students Taught", value: "200+" },
     { label: "Standards", value: "11th & 12th" },
     { label: "Boards", value: "GSEB & CBSE" },
   ],
   skills: [
     "Classroom Management",
     "Teamwork",
-    "Time Management",
+    "Student Mentorship",
     "Leadership",
-    "Communication",
+    "Online Teaching",
     "Problem Solving",
     "Concept Simplification",
     "Lab Safety & Protocols",
@@ -47,18 +47,7 @@ export const teacher = {
     },
   ],
   experience: [
-    // {
-    //   role: "Chemistry Practical Teacher",
-    //   company: "Shree V.J. Modi School",
-    //   location: "Rajkot",
-    //   period: "Sept 2024 – Present",
-    //   points: [
-    //     "Conducted and supervised hands-on chemistry experiments ensuring safety and accuracy",
-    //     "Trained students in proper use of lab equipment and chemical handling",
-    //     "Integrated modern lab techniques and digital tools for experimental learning",
-    //     "Assisted in GSEB board practical exams — setup, equipment, smooth execution",
-    //   ],
-    // },
+
     {
       role: "Chemistry Educator",
       company: "Shree V.J. Modi School",
@@ -78,6 +67,18 @@ export const teacher = {
       points: [
         "Designed and delivered interactive Chemistry lessons for Grade 11",
         "Promoted hands-on learning approach",
+      ],
+    },
+    {
+      role: "Chemistry Teacher",
+      company: "Sahajanand Academy",
+      location: "Rajkot",
+      period: "May 2025 – Dec 2025",
+      points: [
+        "Monitoring student progress and providing individual attention to weak students",
+        "Simplifying complex chemical concepts using interactive teaching methods",
+        "Helping students improve problem-solving and conceptual understanding",
+        "Conducting tests and tracking student performance regularly",
       ],
     },
   ],
