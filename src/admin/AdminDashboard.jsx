@@ -35,9 +35,37 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("notes");
+  const [lastViewedDemos, setLastViewedDemos] = useState(() => {
+    return localStorage.getItem("lastViewedDemos") || new Date(0).toISOString();
+  });
+  const [lastViewedMessages, setLastViewedMessages] = useState(() => {
+    return localStorage.getItem("lastViewedMessages") || new Date(0).toISOString();
+  });
+
+  useEffect(() => {
+    if (activeTab === "demos") {
+      const now = new Date().toISOString();
+      localStorage.setItem("lastViewedDemos", now);
+      setLastViewedDemos(now);
+    } else if (activeTab === "messages") {
+      const now = new Date().toISOString();
+      localStorage.setItem("lastViewedMessages", now);
+      setLastViewedMessages(now);
+    }
+  }, [activeTab]);
+
+  const unreadDemosCount = demoRequests.filter(
+    (req) => new Date(req.created_at) > new Date(lastViewedDemos)
+  ).length;
+
+  const unreadMessagesCount = contactMessages.filter(
+    (msg) => new Date(msg.created_at) > new Date(lastViewedMessages)
+  ).length;
   const [newNote, setNewNote] = useState({
     standard: "11th",
     chapter: "",
+    medium: "EM",
+    fileName: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -123,12 +151,16 @@ const AdminDashboard = () => {
         standard: newNote.standard,
         chapter: newNote.chapter,
         file_url: publicUrl,
+        medium: newNote.medium || "EM",
+        file_name: newNote.fileName || null,
       });
 
       if (result.success) {
         setNewNote({
           standard: "11th",
           chapter: "",
+          medium: "EM",
+          fileName: "",
         });
         setSelectedFile(null);
         // Reset file input
@@ -163,6 +195,15 @@ const AdminDashboard = () => {
     }
   };
 
+  const existingChaptersForSelectedStd = Array.from(
+    new Set(
+      notes
+        .filter((note) => note.standard === newNote.standard)
+        .map((note) => note.chapter?.trim())
+        .filter(Boolean)
+    )
+  ).sort();
+
   const stats = {
     total: notes.length,
     std11: notes.filter((n) => n.standard === "11th").length,
@@ -196,9 +237,9 @@ const AdminDashboard = () => {
           >
             <Calendar size={20} />
             Demo Requests
-            {stats.demos > 0 && (
+            {unreadDemosCount > 0 && (
               <span className="ml-auto bg-accent text-white text-[10px] px-2 py-1 rounded-full">
-                {stats.demos}
+                {unreadDemosCount}
               </span>
             )}
           </button>
@@ -208,9 +249,9 @@ const AdminDashboard = () => {
           >
             <Mail size={20} />
             Contact Messages
-            {stats.messages > 0 && (
+            {unreadMessagesCount > 0 && (
               <span className="ml-auto bg-accent text-white text-[10px] px-2 py-1 rounded-full">
-                {stats.messages}
+                {unreadMessagesCount}
               </span>
             )}
           </button>
@@ -253,7 +294,7 @@ const AdminDashboard = () => {
                 New Requests
               </div>
               <div className="text-2xl font-bold text-dark">
-                {stats.demos + stats.messages}
+                {unreadDemosCount + unreadMessagesCount}
               </div>
             </div>
           </div>
@@ -269,75 +310,117 @@ const AdminDashboard = () => {
               </h2>
               <form
                 onSubmit={handleAddSubmit}
-                className="grid md:grid-cols-4 gap-4"
+                className="space-y-4"
               >
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                    Standard
-                  </label>
-                  <select
-                    value={newNote.standard}
-                    onChange={(e) =>
-                      setNewNote({ ...newNote, standard: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
-                  >
-                    <option value="11th">11th Standard</option>
-                    <option value="12th">12th Standard</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                    Chapter Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Chemical Bonding"
-                    value={newNote.chapter}
-                    onChange={(e) =>
-                      setNewNote({ ...newNote, chapter: e.target.value })
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                    PDF File
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="file-upload"
-                      required
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-all"
-                    >
-                      <span className="text-gray-500 text-sm truncate">
-                        {selectedFile ? selectedFile.name : "Choose PDF..."}
-                      </span>
-                      <Upload size={18} className="text-primary" />
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      Standard
                     </label>
+                    <select
+                      value={newNote.standard}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, standard: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                    >
+                      <option value="11th">11th Standard</option>
+                      <option value="12th">12th Standard</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      Medium
+                    </label>
+                    <select
+                      value={newNote.medium}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, medium: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                    >
+                      <option value="EM">English Medium (EM)</option>
+                      <option value="GM">Gujarati Medium (GM)</option>
+                      <option value="Both">Both (EM & GM)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      Chapter Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Chemical Bonding"
+                      value={newNote.chapter}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, chapter: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      required
+                      list="chapter-suggestions"
+                      autoComplete="off"
+                    />
+                    <datalist id="chapter-suggestions">
+                      {existingChaptersForSelectedStd.map((ch, idx) => (
+                        <option key={idx} value={ch} />
+                      ))}
+                    </datalist>
                   </div>
                 </div>
-                <div className="flex items-end">
-                  <button
-                    type="submit"
-                    disabled={uploading}
-                    className="w-full py-3 bg-primary hover:bg-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {uploading ? (
-                      <span className="animate-spin">⌛</span>
-                    ) : (
-                      <Plus size={18} />
-                    )}
-                    {uploading ? "Uploading..." : "Add Note"}
-                  </button>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      Display File Name (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Theory Notes"
+                      value={newNote.fileName}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, fileName: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      PDF File
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="file-upload"
+                        required
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-all"
+                      >
+                        <span className="text-gray-500 text-sm truncate">
+                          {selectedFile ? selectedFile.name : "Choose PDF..."}
+                        </span>
+                        <Upload size={18} className="text-primary" />
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      disabled={uploading}
+                      className="w-full py-3 bg-primary hover:bg-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploading ? (
+                        <span className="animate-spin">⌛</span>
+                      ) : (
+                        <Plus size={18} />
+                      )}
+                      {uploading ? "Uploading..." : "Add Note"}
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
@@ -414,33 +497,158 @@ const AdminDashboard = () => {
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-50">
-                                {notesInGroup.map((note) => (
-                                  <tr key={note.id} className="hover:bg-gray-50/50">
-                                    <td className="py-3 text-sm text-gray-600 font-medium">
-                                      <div className="flex items-center gap-2">
-                                        <FileText size={14} className="text-gray-400" />
-                                        <a
-                                          href={note.file_url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="hover:text-primary hover:underline truncate max-w-md"
-                                        >
-                                          {getCleanFilename(note.file_url)}
-                                        </a>
-                                      </div>
-                                    </td>
-                                    <td className="py-3 text-right">
-                                      <button
-                                        type="button"
-                                        onClick={() => deleteNote(note.id)}
-                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Delete note"
-                                      >
-                                        <Trash2 size={16} />
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))}
+                                {notesInGroup.map((note) => {
+                                  const isEditing = editingId === note.id;
+                                  return (
+                                    <tr key={note.id} className="hover:bg-gray-50/50">
+                                      {isEditing ? (
+                                        <td className="py-3 px-2 text-sm text-gray-600 font-medium" colSpan="2">
+                                          <div className="flex flex-col gap-3 p-3 bg-primary/5 rounded-2xl border border-primary/10">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                              <div>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                  Display File Name
+                                                </label>
+                                                <input
+                                                  type="text"
+                                                  value={editFormData.file_name || ""}
+                                                  onChange={(e) =>
+                                                    setEditFormData({
+                                                      ...editFormData,
+                                                      file_name: e.target.value,
+                                                    })
+                                                  }
+                                                  placeholder={getCleanFilename(note.file_url)}
+                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                  Chapter Name
+                                                </label>
+                                                <input
+                                                  type="text"
+                                                  value={editFormData.chapter || ""}
+                                                  onChange={(e) =>
+                                                    setEditFormData({
+                                                      ...editFormData,
+                                                      chapter: e.target.value,
+                                                    })
+                                                  }
+                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  required
+                                                />
+                                              </div>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                              <div>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                  Standard
+                                                </label>
+                                                <select
+                                                  value={editFormData.standard || "11th"}
+                                                  onChange={(e) =>
+                                                    setEditFormData({
+                                                      ...editFormData,
+                                                      standard: e.target.value,
+                                                    })
+                                                  }
+                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                >
+                                                  <option value="11th">11th Standard</option>
+                                                  <option value="12th">12th Standard</option>
+                                                </select>
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                  Medium
+                                                </label>
+                                                <select
+                                                  value={editFormData.medium || "EM"}
+                                                  onChange={(e) =>
+                                                    setEditFormData({
+                                                      ...editFormData,
+                                                      medium: e.target.value,
+                                                    })
+                                                  }
+                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                >
+                                                  <option value="EM">English Medium (EM)</option>
+                                                  <option value="GM">Gujarati Medium (GM)</option>
+                                                  <option value="Both">Both (EM & GM)</option>
+                                                </select>
+                                              </div>
+                                            </div>
+                                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                                              <button
+                                                type="button"
+                                                onClick={cancelEdit}
+                                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-lg text-xs transition-all flex items-center gap-1"
+                                              >
+                                                <X size={12} />
+                                                Cancel
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={saveEdit}
+                                                className="px-3 py-1.5 bg-primary hover:bg-dark text-white font-bold rounded-lg text-xs transition-all flex items-center gap-1 shadow-md shadow-primary/10"
+                                              >
+                                                <Save size={12} />
+                                                Save
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </td>
+                                      ) : (
+                                        <>
+                                          <td className="py-3 text-sm text-gray-600 font-medium">
+                                            <div className="flex items-center gap-2">
+                                              <FileText size={14} className="text-gray-400" />
+                                              <div className="flex flex-col">
+                                                <a
+                                                  href={note.file_url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="hover:text-primary hover:underline truncate max-w-md"
+                                                >
+                                                  {note.file_name || getCleanFilename(note.file_url)}
+                                                </a>
+                                                <div className="flex gap-2 items-center mt-0.5">
+                                                  <span className="text-[10px] text-gray-400">
+                                                    URL: {getCleanFilename(note.file_url)}
+                                                  </span>
+                                                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold uppercase">
+                                                    {note.medium || "EM"}
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </td>
+                                          <td className="py-3 text-right">
+                                            <div className="flex justify-end gap-2">
+                                              <button
+                                                type="button"
+                                                onClick={() => startEdit(note)}
+                                                className="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                title="Edit note details"
+                                              >
+                                                <Edit2 size={16} />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => deleteNote(note.id)}
+                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Delete note"
+                                              >
+                                                <Trash2 size={16} />
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </>
+                                      )}
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                           </div>

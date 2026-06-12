@@ -6,6 +6,7 @@ import { Download, FileText, Search, Folder, FolderOpen, ChevronDown, ChevronUp 
 const Notes = () => {
   const { notes, loading } = useNotes();
   const [activeTab, setActiveTab] = useState("11th");
+  const [selectedMedium, setSelectedMedium] = useState("GM");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedChapters, setExpandedChapters] = useState({});
 
@@ -14,7 +15,14 @@ const Notes = () => {
     const matchesSearch = note.chapter
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
+    
+    const noteMedium = note.medium || "EM";
+    const matchesMedium =
+      selectedMedium === "all" ||
+      noteMedium === selectedMedium ||
+      noteMedium === "Both";
+
+    return matchesTab && matchesSearch && matchesMedium;
   });
 
   // Group notes by chapter
@@ -74,7 +82,7 @@ const Notes = () => {
         </p>
 
         {/* Tab Switcher */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <div className="bg-white p-1 rounded-xl shadow-md flex gap-1 border">
             {["11th", "12th"].map((tab) => (
               <button
@@ -87,6 +95,28 @@ const Notes = () => {
                 }`}
               >
                 {tab} Standard
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Medium Switcher */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white p-1 rounded-xl shadow-sm flex gap-1 border border-gray-100">
+            {[
+              { id: "EM", label: "English Medium (EM)" },
+              { id: "GM", label: "Gujarati Medium (GM)" },
+            ].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setSelectedMedium(m.id)}
+                className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 ${
+                  selectedMedium === m.id
+                    ? "bg-primary/10 text-primary shadow-sm"
+                    : "text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                {m.label}
               </button>
             ))}
           </div>
@@ -187,30 +217,78 @@ const Notes = () => {
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.3 }}
-                              className="overflow-hidden mt-4 pt-4 border-t border-gray-100 space-y-2 relative z-10"
+                              className="overflow-hidden mt-4 pt-4 border-t border-gray-100 space-y-4 relative z-10 text-left"
                             >
-                              {chapterNotes.map((note) => (
-                                <div
-                                  key={note.id}
-                                  className="flex items-center justify-between p-3 bg-light-accent/40 hover:bg-light-accent rounded-xl border border-gray-100/50 transition-all duration-200 group/file"
-                                >
-                                  <div className="flex items-center gap-2 max-w-[70%]">
-                                    <FileText size={16} className="text-primary flex-shrink-0" />
-                                    <span className="text-xs font-semibold text-gray-700 truncate">
-                                      {getCleanFilename(note.file_url)}
-                                    </span>
-                                  </div>
-                                  <button
-                                    onClick={() =>
-                                      handleDownload(note.file_url, chapter)
+                              {(() => {
+                                // Group notes by medium
+                                const groupedByMedium = chapterNotes.reduce(
+                                  (acc, note) => {
+                                    const med = note.medium || "EM";
+                                    if (med === "Both") {
+                                      acc["EM"].push(note);
+                                      acc["GM"].push(note);
+                                    } else {
+                                      if (acc[med]) {
+                                        acc[med].push(note);
+                                      }
                                     }
-                                    className="p-2 bg-white text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-all group-hover/file:border-primary border border-gray-200"
-                                    title="Download PDF"
-                                  >
-                                    <Download size={14} />
-                                  </button>
-                                </div>
-                              ))}
+                                    return acc;
+                                  },
+                                  { EM: [], GM: [] }
+                                );
+
+                                return Object.entries(groupedByMedium).map(
+                                  ([med, files]) => {
+                                    if (files.length === 0) return null;
+                                    // If a specific medium filter is active, only show that medium group
+                                    if (
+                                      selectedMedium !== "all" &&
+                                      med !== selectedMedium
+                                    ) {
+                                      return null;
+                                    }
+
+                                    return (
+                                      <div key={med} className="space-y-2">
+                                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1 mb-1">
+                                          {med === "EM"
+                                            ? "English Medium (EM)"
+                                            : "Gujarati Medium (GM)"}
+                                        </div>
+                                        {files.map((note) => (
+                                          <div
+                                            key={note.id}
+                                            className="flex items-center justify-between p-3 bg-light-accent/40 hover:bg-light-accent rounded-xl border border-gray-100/50 transition-all duration-200 group/file"
+                                          >
+                                            <div className="flex items-center gap-2 max-w-[70%]">
+                                              <FileText
+                                                size={16}
+                                                className="text-primary flex-shrink-0"
+                                              />
+                                              <span className="text-xs font-semibold text-gray-700 truncate" title={note.file_name || getCleanFilename(note.file_url)}>
+                                                {note.file_name ||
+                                                  getCleanFilename(note.file_url)}
+                                              </span>
+                                            </div>
+                                            <button
+                                              onClick={() =>
+                                                handleDownload(
+                                                  note.file_url,
+                                                  chapter
+                                                )
+                                              }
+                                              className="p-2 bg-white text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-all group-hover/file:border-primary border border-gray-200"
+                                              title="Download PDF"
+                                            >
+                                              <Download size={14} />
+                                            </button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    );
+                                  }
+                                );
+                              })()}
                             </motion.div>
                           )}
                         </AnimatePresence>
