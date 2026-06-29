@@ -66,8 +66,8 @@ const AdminDashboard = () => {
     chapter: "",
     medium: "EM",
     fileName: "",
+    fileUrl: "",
   });
-  const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
@@ -82,6 +82,9 @@ const AdminDashboard = () => {
 
   const getCleanFilename = (url) => {
     if (!url) return "Document.pdf";
+    if (url.includes("drive.google.com")) {
+      return "Google Drive File";
+    }
     try {
       const filename = decodeURIComponent(url.split("/").pop());
       const underscoreIndex = filename.indexOf("_");
@@ -108,51 +111,21 @@ const AdminDashboard = () => {
     navigate("/admin");
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const uploadFile = async (file, standard, chapter) => {
-    const sanitizedChapter = chapter.replace(/\/+/g, "-");
-    // Place inside folders in the storage bucket, prefix filename with timestamp to prevent collisions
-    const filePath = `${standard}/${sanitizedChapter}/${Date.now()}_${file.name}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("notes")
-      .upload(filePath, file);
-
-    if (uploadError) {
-      throw uploadError;
-    }
-
-    const { data } = supabase.storage.from("notes").getPublicUrl(filePath);
-
-    return data.publicUrl;
-  };
-
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    if (!newNote.chapter || !selectedFile) {
-      alert("Please provide chapter name and select a PDF file.");
+    if (!newNote.chapter || !newNote.fileUrl || !newNote.fileName) {
+      alert("Please fill in all fields (Chapter Name, Display File Name, and Google Drive Link).");
       return;
     }
 
     setUploading(true);
     try {
-      const publicUrl = await uploadFile(
-        selectedFile,
-        newNote.standard,
-        newNote.chapter,
-      );
-
       const result = await addNote({
         standard: newNote.standard,
         chapter: newNote.chapter,
-        file_url: publicUrl,
+        file_url: newNote.fileUrl,
         medium: newNote.medium || "EM",
-        file_name: newNote.fileName || null,
+        file_name: newNote.fileName,
       });
 
       if (result.success) {
@@ -161,16 +134,15 @@ const AdminDashboard = () => {
           chapter: "",
           medium: "EM",
           fileName: "",
+          fileUrl: "",
         });
-        setSelectedFile(null);
-        // Reset file input
         e.target.reset();
       } else {
         alert("Failed to add note: " + result.error);
       }
     } catch (error) {
-      console.error("Upload error:", error.message);
-      alert("Error uploading file: " + error.message);
+      console.error("Save error:", error.message);
+      alert("Error saving note: " + error.message);
     } finally {
       setUploading(false);
     }
@@ -371,7 +343,7 @@ const AdminDashboard = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                      Display File Name (Optional)
+                      Display File Name
                     </label>
                     <input
                       type="text"
@@ -381,31 +353,23 @@ const AdminDashboard = () => {
                         setNewNote({ ...newNote, fileName: e.target.value })
                       }
                       className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                      PDF File
+                      Google Drive Link
                     </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="file-upload"
-                        required
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-dashed border-gray-300 bg-gray-50 cursor-pointer hover:border-primary transition-all"
-                      >
-                        <span className="text-gray-500 text-sm truncate">
-                          {selectedFile ? selectedFile.name : "Choose PDF..."}
-                        </span>
-                        <Upload size={18} className="text-primary" />
-                      </label>
-                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://drive.google.com/file/d/.../view"
+                      value={newNote.fileUrl}
+                      onChange={(e) =>
+                        setNewNote({ ...newNote, fileUrl: e.target.value })
+                      }
+                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      required
+                    />
                   </div>
                   <div className="flex items-end">
                     <button
@@ -418,7 +382,7 @@ const AdminDashboard = () => {
                       ) : (
                         <Plus size={18} />
                       )}
-                      {uploading ? "Uploading..." : "Add Note"}
+                      {uploading ? "Saving..." : "Add Note"}
                     </button>
                   </div>
                 </div>
@@ -504,7 +468,7 @@ const AdminDashboard = () => {
                                       {isEditing ? (
                                         <td className="py-3 px-2 text-sm text-gray-600 font-medium" colSpan="2">
                                           <div className="flex flex-col gap-3 p-3 bg-primary/5 rounded-2xl border border-primary/10">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                               <div>
                                                 <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                                                   Display File Name
@@ -518,8 +482,27 @@ const AdminDashboard = () => {
                                                       file_name: e.target.value,
                                                     })
                                                   }
-                                                  placeholder={getCleanFilename(note.file_url)}
+                                                  placeholder="e.g. Theory Notes"
                                                   className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  required
+                                                />
+                                              </div>
+                                              <div>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                  Google Drive Link
+                                                </label>
+                                                <input
+                                                  type="url"
+                                                  value={editFormData.file_url || ""}
+                                                  onChange={(e) =>
+                                                    setEditFormData({
+                                                      ...editFormData,
+                                                      file_url: e.target.value,
+                                                    })
+                                                  }
+                                                  placeholder="https://drive.google.com/..."
+                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  required
                                                 />
                                               </div>
                                               <div>

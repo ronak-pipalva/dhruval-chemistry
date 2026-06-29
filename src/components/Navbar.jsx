@@ -63,10 +63,18 @@ const Navbar = () => {
         <a
           href="#home"
           onClick={(e) => scrollToSection(e, "#home")}
-          className="flex items-center gap-2 text-primary font-heading font-bold text-xl"
+          className="flex items-center gap-3"
         >
-          <span className="text-2xl">⚗️</span>
-          <span className="hidden sm:inline">Dhruval Talsaniya</span>
+          <span className="text-3xl text-primary flex-shrink-0">⚗️</span>
+          <div className="flex flex-col items-start leading-none select-none">
+            <span className={`font-heading font-extrabold text-xl md:text-2xl tracking-tight transition-colors duration-300 ${isScrolled ? "text-dark" : "text-white"}`}>
+              Chem<span className="text-accent">Concept</span>
+            </span>
+            <div className="h-[1.5px] w-full bg-gold my-0.5 rounded-full" />
+            <span className="text-[8px] font-bold text-gold tracking-[0.2em] uppercase whitespace-nowrap">
+              Chemistry Educator
+            </span>
+          </div>
         </a>
 
         {/* Desktop Menu */}

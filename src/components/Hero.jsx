@@ -69,7 +69,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-br from-dark via-[#0a5c5e] to-primary"
+      className="relative min-h-screen flex items-center pt-20 pb-12 md:pb-0 overflow-hidden bg-gradient-to-br from-dark via-[#0a5c5e] to-primary"
     >
       {/* Animated Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -161,7 +161,7 @@ const Hero = () => {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative flex justify-center"
+          className="relative flex flex-col items-center justify-center gap-6"
         >
           <div className="relative w-56 h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full p-2 border-2 border-accent/30">
             <div className="absolute inset-0 rounded-full border-2 border-accent border-dashed animate-spin-slow opacity-50" />
@@ -175,6 +175,15 @@ const Hero = () => {
                   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800";
               }}
             />
+          </div>
+
+          <div className="text-center bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-2xl shadow-xl max-w-xs transition-all hover:scale-105 duration-300">
+            <div className="text-xs font-bold uppercase tracking-wider text-accent">
+              Founder of ChemConcept
+            </div>
+            <div className="text-lg font-extrabold text-white mt-1">
+              Dhruval Talsaniya
+            </div>
           </div>
         </motion.div>
       </div>

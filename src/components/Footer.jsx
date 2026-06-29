@@ -53,9 +53,17 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Logo and Tagline */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-primary font-heading font-bold text-2xl">
-              <span>⚗️</span>
-              <span>Dhruval Talsaniya</span>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl text-primary flex-shrink-0">⚗️</span>
+              <div className="flex flex-col items-start leading-none select-none text-left">
+                <span className="font-heading font-extrabold text-xl md:text-2xl tracking-tight text-white">
+                  Chem<span className="text-accent">Concept</span>
+                </span>
+                <div className="h-[1.5px] w-full bg-gold my-0.5 rounded-full" />
+                <span className="text-[8px] font-bold text-gold tracking-[0.2em] uppercase whitespace-nowrap">
+                  Chemistry Educator
+                </span>
+              </div>
             </div>
             <p className="text-gray-400 max-w-sm leading-relaxed">
               {teacher.tagline}. Dedicated to making chemistry accessible and

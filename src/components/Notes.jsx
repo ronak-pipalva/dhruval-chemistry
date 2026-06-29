@@ -46,6 +46,9 @@ const Notes = () => {
 
   const getCleanFilename = (url) => {
     if (!url) return "Document.pdf";
+    if (url.includes("drive.google.com")) {
+      return "Google Drive File";
+    }
     try {
       const filename = decodeURIComponent(url.split("/").pop());
       const underscoreIndex = filename.indexOf("_");
