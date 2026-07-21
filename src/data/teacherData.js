@@ -7,7 +7,7 @@ export const teacher = {
   email: "talsaniyadhruval231@gmail.com",
   location: "Rampark Main Road, Rajkot, Gujarat",
   languages: ["Gujarati", "Hindi", "English"],
-  photo: "/photo.jpg", // IMPORTANT: Place your photo as 'photo.jpg' in the /public folder
+  photo: "/photo.png", // IMPORTANT: Place your photo as 'photo.png' in the /public folder
   profile:
     "Passionate and knowledgeable chemistry teacher with strong skills in designing engaging lesson plans, fostering critical thinking, and adapting teaching methods to suit diverse learning styles. Proficient in using technology to enhance learning and committed to creating an interactive and supportive classroom environment that inspires students to excel.",
   stats: [
