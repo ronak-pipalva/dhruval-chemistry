@@ -68,6 +68,7 @@ const AdminDashboard = () => {
     fileName: "",
     fileUrl: "",
   });
+  const [chapterInputMode, setChapterInputMode] = useState("select"); // "select" or "new"
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
@@ -122,10 +123,10 @@ const AdminDashboard = () => {
     try {
       const result = await addNote({
         standard: newNote.standard,
-        chapter: newNote.chapter,
+        chapter: newNote.chapter.trim(),
         file_url: newNote.fileUrl,
         medium: newNote.medium || "EM",
-        file_name: newNote.fileName,
+        file_name: newNote.fileName.trim(),
       });
 
       if (result.success) {
@@ -136,6 +137,7 @@ const AdminDashboard = () => {
           fileName: "",
           fileUrl: "",
         });
+        setChapterInputMode("select");
         e.target.reset();
       } else {
         alert("Failed to add note: " + result.error);
@@ -159,7 +161,11 @@ const AdminDashboard = () => {
   };
 
   const saveEdit = async () => {
-    const result = await updateNote(editingId, editFormData);
+    const result = await updateNote(editingId, {
+      ...editFormData,
+      chapter: editFormData.chapter?.trim(),
+      file_name: editFormData.file_name?.trim(),
+    });
     if (result.success) {
       setEditingId(null);
     } else {
@@ -170,11 +176,24 @@ const AdminDashboard = () => {
   const existingChaptersForSelectedStd = Array.from(
     new Set(
       notes
-        .filter((note) => note.standard === newNote.standard)
+        .filter((note) => {
+          if (note.standard !== newNote.standard) return false;
+          if (newNote.medium === "Both") return true;
+          return note.medium === newNote.medium || note.medium === "Both";
+        })
         .map((note) => note.chapter?.trim())
         .filter(Boolean)
     )
   ).sort();
+
+  useEffect(() => {
+    if (!newNote.chapter) return; // keep current mode when field is empty
+    if (existingChaptersForSelectedStd.includes(newNote.chapter)) {
+      setChapterInputMode("select");
+    } else {
+      setChapterInputMode("new");
+    }
+  }, [newNote.chapter, existingChaptersForSelectedStd]);
 
   const stats = {
     total: notes.length,
@@ -320,23 +339,42 @@ const AdminDashboard = () => {
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
                       Chapter Name
                     </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Chemical Bonding"
-                      value={newNote.chapter}
-                      onChange={(e) =>
-                        setNewNote({ ...newNote, chapter: e.target.value })
-                      }
+                    <select
+                      value={chapterInputMode === "select" ? newNote.chapter : "new"}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "new") {
+                          setChapterInputMode("new");
+                          setNewNote({ ...newNote, chapter: "" });
+                        } else {
+                          setChapterInputMode("select");
+                          setNewNote({ ...newNote, chapter: value });
+                        }
+                      }}
                       className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
                       required
-                      list="chapter-suggestions"
-                      autoComplete="off"
-                    />
-                    <datalist id="chapter-suggestions">
-                      {existingChaptersForSelectedStd.map((ch, idx) => (
-                        <option key={idx} value={ch} />
+                    >
+                      <option value="">Select Chapter</option>
+                      {existingChaptersForSelectedStd.map((ch) => (
+                        <option key={ch} value={ch}>
+                          {ch}
+                        </option>
                       ))}
-                    </datalist>
+                      <option value="new">+ Add New Chapter</option>
+                    </select>
+                    {chapterInputMode === "new" && (
+                      <input
+                        type="text"
+                        placeholder="e.g. Chemical Bonding"
+                        value={newNote.chapter}
+                        onChange={(e) =>
+                          setNewNote({ ...newNote, chapter: e.target.value })
+                        }
+                        className="w-full mt-2 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                        required
+                        autoComplete="off"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -398,7 +436,7 @@ const AdminDashboard = () => {
                 {(() => {
                   // Group notes by standard and chapter
                   const groupedAdminNotes = notes.reduce((acc, note) => {
-                    const key = `${note.standard} - ${note.chapter}`;
+                    const key = `${note.standard} - ${note.chapter?.trim()}`;
                     if (!acc[key]) {
                       acc[key] = [];
                     }
