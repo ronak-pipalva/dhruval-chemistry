@@ -78,16 +78,16 @@ const Navbar = () => {
         </a>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-5 xl:gap-8">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={(e) => scrollToSection(e, link.href)}
-              className={`font-semibold transition-colors hover:text-primary ${
+              className={`font-semibold text-sm xl:text-base transition-colors ${
                 activeSection === link.href.substring(1)
-                  ? "text-primary"
-                  : "text-gray-600"
+                  ? isScrolled ? "text-primary font-bold" : "text-accent font-bold"
+                  : isScrolled ? "text-gray-700 hover:text-primary" : "text-white/90 hover:text-white"
               }`}
             >
               {link.name}
@@ -96,37 +96,38 @@ const Navbar = () => {
           <a
             href="#demo"
             onClick={(e) => scrollToSection(e, "#demo")}
-            className="btn-primary py-2 px-5 text-sm"
+            className="btn-primary py-2 px-4 xl:px-5 text-sm whitespace-nowrap"
           >
             Book Demo
           </a>
         </div>
 
-        {/* Mobile Toggle */}
+        {/* Mobile / Tablet Toggle */}
         <button
-          className="md:hidden text-gray-700"
+          className={`lg:hidden transition-colors ${isScrolled ? "text-gray-800" : "text-white"}`}
           onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle navigation menu"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile / Tablet Menu Dropdown */}
       <div
-        className={`md:hidden absolute top-full left-0 w-full bg-white shadow-xl transition-all duration-300 overflow-hidden ${
-          isOpen ? "max-h-96 border-t" : "max-h-0"
+        className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md shadow-xl transition-all duration-300 overflow-hidden ${
+          isOpen ? "max-h-96 border-t border-gray-100" : "max-h-0"
         }`}
       >
-        <div className="flex flex-col p-4 gap-4">
+        <div className="flex flex-col p-5 gap-4">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={(e) => scrollToSection(e, link.href)}
-              className={`text-lg font-semibold ${
+              className={`text-lg font-semibold transition-colors ${
                 activeSection === link.href.substring(1)
-                  ? "text-primary"
-                  : "text-gray-600"
+                  ? "text-primary font-bold"
+                  : "text-gray-700 hover:text-primary"
               }`}
             >
               {link.name}
@@ -135,7 +136,7 @@ const Navbar = () => {
           <a
             href="#demo"
             onClick={(e) => scrollToSection(e, "#demo")}
-            className="btn-primary text-center"
+            className="btn-primary text-center py-2.5 mt-2"
           >
             Book Free Demo
           </a>
