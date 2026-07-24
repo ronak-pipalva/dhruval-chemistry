@@ -14,7 +14,7 @@ export const teacher = {
     { label: "Years Experience", value: "2+" },
     { label: "Students Taught", value: "200+" },
     { label: "Standards", value: "11th & 12th" },
-    { label: "Boards", value: "GSEB & CBSE" },
+    { label: "Boards", value: "GSEB, CBSE & ISC" },
   ],
   skills: [
     "Classroom Management",

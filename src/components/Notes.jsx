@@ -80,8 +80,8 @@ const Notes = () => {
         </h2>
         <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
           Access high-quality chemistry notes for 11th & 12th standards.
-          Simplified explanations of complex chapters to help you excel in GSEB
-          & CBSE boards.
+          Simplified explanations of complex chapters to help you excel in GSEB,
+          CBSE & ISC boards.
         </p>
 
         {/* Tab Switcher */}

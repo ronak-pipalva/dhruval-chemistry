@@ -25,7 +25,7 @@ const WhyChooseMe = () => {
       icon: <Atom className="w-8 h-8" />,
       title: "Board Specialist",
       description:
-        "Deep knowledge of GSEB & CBSE syllabus with insights into exam patterns and scoring.",
+        "Deep knowledge of GSEB, CBSE & ISC syllabus with insights into exam patterns and scoring.",
     },
   ];
 

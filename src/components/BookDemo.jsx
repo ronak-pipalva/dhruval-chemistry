@@ -166,6 +166,7 @@ const BookDemo = () => {
                     <option value="GSEB">GSEB</option>
                     <option value="CBSE">CBSE</option>
                     <option value="ICSE">ICSE</option>
+                    <option value="ISC">ISC</option>
                     <option value="Other">Other</option>
                   </select>
                   {formData.board === "Other" && (
