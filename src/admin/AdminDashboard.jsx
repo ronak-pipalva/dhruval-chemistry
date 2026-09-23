@@ -18,12 +18,14 @@ import {
   FolderOpen,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
 const AdminDashboard = () => {
   const {
     notes,
+    practiceUnits,
     demoRequests,
     contactMessages,
     isAdminLoggedIn,
@@ -31,6 +33,9 @@ const AdminDashboard = () => {
     addNote,
     updateNote,
     deleteNote,
+    addPracticeUnit,
+    updatePracticeUnit,
+    deletePracticeUnit,
   } = useNotes();
   const navigate = useNavigate();
 
@@ -73,6 +78,18 @@ const AdminDashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [expandedChapters, setExpandedChapters] = useState({});
+
+  // Practice Zone state
+  const [newPracticeUnit, setNewPracticeUnit] = useState({
+    unit_name: "",
+    description: "",
+    no_of_questions: "",
+    form_link: "",
+    solution_link: "",
+  });
+  const [practiceUploading, setPracticeUploading] = useState(false);
+  const [editingPracticeId, setEditingPracticeId] = useState(null);
+  const [editPracticeData, setEditPracticeData] = useState({});
 
   const toggleChapter = (key) => {
     setExpandedChapters((prev) => ({
@@ -173,6 +190,68 @@ const AdminDashboard = () => {
     }
   };
 
+  // Practice Zone handlers
+  const handleAddPracticeUnit = async (e) => {
+    e.preventDefault();
+    if (!newPracticeUnit.unit_name || !newPracticeUnit.form_link || !newPracticeUnit.solution_link || !newPracticeUnit.no_of_questions) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    setPracticeUploading(true);
+    try {
+      const result = await addPracticeUnit({
+        unit_name: newPracticeUnit.unit_name.trim(),
+        description: newPracticeUnit.description.trim(),
+        no_of_questions: parseInt(newPracticeUnit.no_of_questions, 10),
+        form_link: newPracticeUnit.form_link.trim(),
+        solution_link: newPracticeUnit.solution_link.trim(),
+      });
+
+      if (result.success) {
+        setNewPracticeUnit({
+          unit_name: "",
+          description: "",
+          no_of_questions: "",
+          form_link: "",
+          solution_link: "",
+        });
+      } else {
+        alert("Failed to add practice unit: " + result.error);
+      }
+    } catch (error) {
+      console.error("Save error:", error.message);
+      alert("Error saving practice unit: " + error.message);
+    } finally {
+      setPracticeUploading(false);
+    }
+  };
+
+  const startEditPractice = (unit) => {
+    setEditingPracticeId(unit.id);
+    setEditPracticeData(unit);
+  };
+
+  const cancelEditPractice = () => {
+    setEditingPracticeId(null);
+    setEditPracticeData({});
+  };
+
+  const saveEditPractice = async () => {
+    const result = await updatePracticeUnit(editingPracticeId, {
+      unit_name: editPracticeData.unit_name?.trim(),
+      description: editPracticeData.description?.trim(),
+      no_of_questions: parseInt(editPracticeData.no_of_questions, 10),
+      form_link: editPracticeData.form_link?.trim(),
+      solution_link: editPracticeData.solution_link?.trim(),
+    });
+    if (result.success) {
+      setEditingPracticeId(null);
+    } else {
+      alert("Failed to update: " + result.error);
+    }
+  };
+
   const existingChaptersForSelectedStd = Array.from(
     new Set(
       notes
@@ -201,30 +280,47 @@ const AdminDashboard = () => {
     std12: notes.filter((n) => n.standard === "12th").length,
     demos: demoRequests.length,
     messages: contactMessages.length,
+    practiceCount: practiceUnits.length,
   };
 
   if (!isAdminLoggedIn) return null;
 
+  const fieldInput =
+    "w-full px-4 py-3 rounded-xl border border-border bg-input-bg text-text placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/10 outline-none transition-all";
+
+  const editInput =
+    "w-full px-3 py-1.5 rounded-lg border border-border bg-input-bg text-text text-xs outline-none focus:border-accent transition-all";
+
+  const labelSm = "block text-xs font-bold text-muted uppercase mb-2";
+  const labelXs = "block text-[10px] font-bold text-muted uppercase mb-1";
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-bg flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-dark text-white p-6 flex flex-col">
-        <div className="flex items-center gap-3 text-primary font-bold text-xl mb-12">
+      <aside className="w-full md:w-64 bg-bg-alt text-text p-6 flex flex-col border-r border-border">
+        <div className="flex items-center gap-3 text-accent font-bold text-xl mb-12">
           <span>⚗️</span>
-          <span>Admin Panel</span>
+          <span className="text-heading">Admin Panel</span>
         </div>
 
         <nav className="flex-grow space-y-2">
           <button
             onClick={() => setActiveTab("notes")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "notes" ? "bg-primary text-white" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "notes" ? "bg-accent text-white" : "text-muted hover:text-heading hover:bg-surface-hover"}`}
           >
             <FileText size={20} />
             Notes Manager
           </button>
           <button
+            onClick={() => setActiveTab("practice")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "practice" ? "bg-accent text-white" : "text-muted hover:text-heading hover:bg-surface-hover"}`}
+          >
+            <ClipboardList size={20} />
+            Practice Zone
+          </button>
+          <button
             onClick={() => setActiveTab("demos")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "demos" ? "bg-primary text-white" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "demos" ? "bg-accent text-white" : "text-muted hover:text-heading hover:bg-surface-hover"}`}
           >
             <Calendar size={20} />
             Demo Requests
@@ -236,7 +332,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => setActiveTab("messages")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "messages" ? "bg-primary text-white" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all ${activeTab === "messages" ? "bg-accent text-white" : "text-muted hover:text-heading hover:bg-surface-hover"}`}
           >
             <Mail size={20} />
             Contact Messages
@@ -250,7 +346,7 @@ const AdminDashboard = () => {
 
         <button
           onClick={handleLogout}
-          className="mt-auto flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+          className="mt-auto flex items-center gap-3 px-4 py-3 text-muted hover:text-heading hover:bg-surface-hover rounded-xl transition-all"
         >
           <LogOut size={20} />
           Logout
@@ -261,42 +357,50 @@ const AdminDashboard = () => {
       <main className="flex-grow p-6 md:p-10">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
           <div>
-            <h1 className="text-3xl font-bold text-dark text-capitalize">
+            <h1 className="text-3xl font-bold text-heading text-capitalize">
               {activeTab === "notes"
                 ? "Notes Management"
-                : activeTab === "demos"
-                  ? "Demo Requests"
-                  : "Student Inquiries"}
+                : activeTab === "practice"
+                  ? "Practice Zone Manager"
+                  : activeTab === "demos"
+                    ? "Demo Requests"
+                    : "Student Inquiries"}
             </h1>
-            <p className="text-gray-500">Welcome back, Dhruval Sir</p>
+            <p className="text-muted">Welcome back, Dhruval Sir</p>
           </div>
 
-          <div className="flex gap-4">
-            <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 text-center">
-              <div className="text-sm text-gray-500 font-bold uppercase tracking-wider">
-                Total Notes
-              </div>
-              <div className="text-2xl font-bold text-primary">
-                {stats.total}
-              </div>
-            </div>
-            <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 text-center">
-              <div className="text-sm text-gray-500 font-bold uppercase tracking-wider">
-                New Requests
-              </div>
-              <div className="text-2xl font-bold text-dark">
-                {unreadDemosCount + unreadMessagesCount}
+          {activeTab === "notes" && (
+            <div className="flex gap-4">
+              <div className="glass-panel px-6 py-3 rounded-2xl text-center">
+                <div className="text-sm text-muted font-bold uppercase tracking-wider">
+                  Total Notes
+                </div>
+                <div className="text-2xl font-bold text-accent">
+                  {stats.total}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+          {activeTab === "practice" && (
+            <div className="flex gap-4">
+              <div className="glass-panel px-6 py-3 rounded-2xl text-center">
+                <div className="text-sm text-muted font-bold uppercase tracking-wider">
+                  Practice Units
+                </div>
+                <div className="text-2xl font-bold text-accent">
+                  {stats.practiceCount}
+                </div>
+              </div>
+            </div>
+          )}
         </header>
 
         {activeTab === "notes" && (
           <>
             {/* Add Note Form */}
-            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 mb-10">
-              <h2 className="text-xl font-bold text-dark mb-6 flex items-center gap-2">
-                <Plus className="text-primary" />
+            <div className="glass-panel p-6 md:p-8 rounded-3xl mb-10">
+              <h2 className="text-xl font-bold text-heading mb-6 flex items-center gap-2">
+                <Plus className="text-accent" />
                 Add New Note
               </h2>
               <form
@@ -305,7 +409,7 @@ const AdminDashboard = () => {
               >
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    <label className={labelSm}>
                       Standard
                     </label>
                     <select
@@ -313,14 +417,14 @@ const AdminDashboard = () => {
                       onChange={(e) =>
                         setNewNote({ ...newNote, standard: e.target.value })
                       }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      className={fieldInput}
                     >
                       <option value="11th">11th Standard</option>
                       <option value="12th">12th Standard</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    <label className={labelSm}>
                       Medium
                     </label>
                     <select
@@ -328,7 +432,7 @@ const AdminDashboard = () => {
                       onChange={(e) =>
                         setNewNote({ ...newNote, medium: e.target.value })
                       }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      className={fieldInput}
                     >
                       <option value="EM">English Medium (EM)</option>
                       <option value="GM">Gujarati Medium (GM)</option>
@@ -336,7 +440,7 @@ const AdminDashboard = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    <label className={labelSm}>
                       Chapter Name
                     </label>
                     <select
@@ -351,7 +455,7 @@ const AdminDashboard = () => {
                           setNewNote({ ...newNote, chapter: value });
                         }
                       }}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      className={fieldInput}
                       required
                     >
                       <option value="">Select Chapter</option>
@@ -370,7 +474,7 @@ const AdminDashboard = () => {
                         onChange={(e) =>
                           setNewNote({ ...newNote, chapter: e.target.value })
                         }
-                        className="w-full mt-2 px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                        className={`mt-2 ${fieldInput}`}
                         required
                         autoComplete="off"
                       />
@@ -380,7 +484,7 @@ const AdminDashboard = () => {
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    <label className={labelSm}>
                       Display File Name
                     </label>
                     <input
@@ -390,12 +494,12 @@ const AdminDashboard = () => {
                       onChange={(e) =>
                         setNewNote({ ...newNote, fileName: e.target.value })
                       }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      className={fieldInput}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    <label className={labelSm}>
                       Google Drive Link
                     </label>
                     <input
@@ -405,7 +509,7 @@ const AdminDashboard = () => {
                       onChange={(e) =>
                         setNewNote({ ...newNote, fileUrl: e.target.value })
                       }
-                      className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:border-primary outline-none transition-all"
+                      className={fieldInput}
                       required
                     />
                   </div>
@@ -413,7 +517,7 @@ const AdminDashboard = () => {
                     <button
                       type="submit"
                       disabled={uploading}
-                      className="w-full py-3 bg-primary hover:bg-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-3 bg-accent hover:bg-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {uploading ? (
                         <span className="animate-spin">⌛</span>
@@ -428,11 +532,11 @@ const AdminDashboard = () => {
             </div>
 
             {/* Notes Grouped by Folders */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                <h3 className="font-bold text-dark">Notes Folder Structure</h3>
+            <div className="glass-panel rounded-3xl overflow-hidden">
+              <div className="p-6 border-b border-border">
+                <h3 className="font-bold text-heading">Notes Folder Structure</h3>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-border">
                 {(() => {
                   // Group notes by standard and chapter
                   const groupedAdminNotes = notes.reduce((acc, note) => {
@@ -448,7 +552,7 @@ const AdminDashboard = () => {
 
                   if (keys.length === 0) {
                     return (
-                      <div className="p-10 text-center text-gray-400">
+                      <div className="p-10 text-center text-muted">
                         No notes uploaded yet.
                       </div>
                     );
@@ -464,51 +568,51 @@ const AdminDashboard = () => {
                         <button
                           type="button"
                           onClick={() => toggleChapter(groupKey)}
-                          className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors w-full text-left"
+                          className="flex items-center justify-between px-6 py-4 hover:bg-surface-hover transition-colors w-full text-left"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="p-2 bg-primary/10 text-primary rounded-lg">
+                            <span className="p-2 bg-accent/10 text-accent rounded-lg">
                               {isExpanded ? <FolderOpen size={18} /> : <Folder size={18} />}
                             </span>
                             <div>
-                              <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full mr-2">
+                              <span className="text-xs font-bold text-accent bg-accent/10 px-2.5 py-0.5 rounded-full mr-2">
                                 {std}
                               </span>
-                              <span className="font-semibold text-dark">{chapter}</span>
+                              <span className="font-semibold text-heading">{chapter}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400 font-bold">
+                            <span className="text-xs text-muted font-bold">
                               {notesInGroup.length} {notesInGroup.length === 1 ? "file" : "files"}
                             </span>
                             {isExpanded ? (
-                              <ChevronUp size={16} className="text-gray-400" />
+                              <ChevronUp size={16} className="text-muted" />
                             ) : (
-                              <ChevronDown size={16} className="text-gray-400" />
+                              <ChevronDown size={16} className="text-muted" />
                             )}
                           </div>
                         </button>
 
                         {isExpanded && (
-                          <div className="bg-gray-50/30 px-6 py-2 border-t border-gray-50">
+                          <div className="bg-surface-hover/30 px-6 py-2 border-t border-border">
                             <table className="w-full text-left">
                               <thead>
-                                <tr className="border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                <tr className="border-b border-border text-[10px] font-bold text-muted uppercase tracking-wider">
                                   <th className="py-2">File Name</th>
                                   <th className="py-2 text-right">Actions</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-gray-50">
+                              <tbody className="divide-y divide-border">
                                 {notesInGroup.map((note) => {
                                   const isEditing = editingId === note.id;
                                   return (
-                                    <tr key={note.id} className="hover:bg-gray-50/50">
+                                    <tr key={note.id} className="hover:bg-surface-hover/50">
                                       {isEditing ? (
-                                        <td className="py-3 px-2 text-sm text-gray-600 font-medium" colSpan="2">
-                                          <div className="flex flex-col gap-3 p-3 bg-primary/5 rounded-2xl border border-primary/10">
+                                        <td className="py-3 px-2 text-sm text-text font-medium" colSpan="2">
+                                          <div className="flex flex-col gap-3 p-3 bg-accent/5 rounded-2xl border border-accent/10">
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                               <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                <label className={labelXs}>
                                                   Display File Name
                                                 </label>
                                                 <input
@@ -521,12 +625,12 @@ const AdminDashboard = () => {
                                                     })
                                                   }
                                                   placeholder="e.g. Theory Notes"
-                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  className={editInput}
                                                   required
                                                 />
                                               </div>
                                               <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                <label className={labelXs}>
                                                   Google Drive Link
                                                 </label>
                                                 <input
@@ -539,12 +643,12 @@ const AdminDashboard = () => {
                                                     })
                                                   }
                                                   placeholder="https://drive.google.com/..."
-                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  className={editInput}
                                                   required
                                                 />
                                               </div>
                                               <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                <label className={labelXs}>
                                                   Chapter Name
                                                 </label>
                                                 <input
@@ -556,14 +660,14 @@ const AdminDashboard = () => {
                                                       chapter: e.target.value,
                                                     })
                                                   }
-                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  className={editInput}
                                                   required
                                                 />
                                               </div>
                                             </div>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                               <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                <label className={labelXs}>
                                                   Standard
                                                 </label>
                                                 <select
@@ -574,14 +678,14 @@ const AdminDashboard = () => {
                                                       standard: e.target.value,
                                                     })
                                                   }
-                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  className={editInput}
                                                 >
                                                   <option value="11th">11th Standard</option>
                                                   <option value="12th">12th Standard</option>
                                                 </select>
                                               </div>
                                               <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
+                                                <label className={labelXs}>
                                                   Medium
                                                 </label>
                                                 <select
@@ -592,7 +696,7 @@ const AdminDashboard = () => {
                                                       medium: e.target.value,
                                                     })
                                                   }
-                                                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs outline-none focus:border-primary transition-all"
+                                                  className={editInput}
                                                 >
                                                   <option value="EM">English Medium (EM)</option>
                                                   <option value="GM">Gujarati Medium (GM)</option>
@@ -600,11 +704,11 @@ const AdminDashboard = () => {
                                                 </select>
                                               </div>
                                             </div>
-                                            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                                            <div className="flex justify-end gap-2 pt-2 border-t border-border">
                                               <button
                                                 type="button"
                                                 onClick={cancelEdit}
-                                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-lg text-xs transition-all flex items-center gap-1"
+                                                className="px-3 py-1.5 bg-surface-hover hover:bg-surface text-text font-bold rounded-lg text-xs transition-all flex items-center gap-1"
                                               >
                                                 <X size={12} />
                                                 Cancel
@@ -612,7 +716,7 @@ const AdminDashboard = () => {
                                               <button
                                                 type="button"
                                                 onClick={saveEdit}
-                                                className="px-3 py-1.5 bg-primary hover:bg-dark text-white font-bold rounded-lg text-xs transition-all flex items-center gap-1 shadow-md shadow-primary/10"
+                                                className="px-3 py-1.5 bg-accent hover:bg-dark text-white font-bold rounded-lg text-xs transition-all flex items-center gap-1 shadow-md shadow-accent/10"
                                               >
                                                 <Save size={12} />
                                                 Save
@@ -622,23 +726,23 @@ const AdminDashboard = () => {
                                         </td>
                                       ) : (
                                         <>
-                                          <td className="py-3 text-sm text-gray-600 font-medium">
+                                          <td className="py-3 text-sm text-text font-medium">
                                             <div className="flex items-center gap-2">
-                                              <FileText size={14} className="text-gray-400" />
+                                              <FileText size={14} className="text-muted" />
                                               <div className="flex flex-col">
                                                 <a
                                                   href={note.file_url}
                                                   target="_blank"
                                                   rel="noopener noreferrer"
-                                                  className="hover:text-primary hover:underline truncate max-w-md"
+                                                  className="hover:text-accent hover:underline truncate max-w-md"
                                                 >
                                                   {note.file_name || getCleanFilename(note.file_url)}
                                                 </a>
                                                 <div className="flex gap-2 items-center mt-0.5">
-                                                  <span className="text-[10px] text-gray-400">
+                                                  <span className="text-[10px] text-muted">
                                                     URL: {getCleanFilename(note.file_url)}
                                                   </span>
-                                                  <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-bold uppercase">
+                                                  <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.2 rounded font-bold uppercase">
                                                     {note.medium || "EM"}
                                                   </span>
                                                 </div>
@@ -650,7 +754,7 @@ const AdminDashboard = () => {
                                               <button
                                                 type="button"
                                                 onClick={() => startEdit(note)}
-                                                className="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                className="p-1.5 text-muted hover:text-accent hover:bg-accent/5 rounded-lg transition-colors"
                                                 title="Edit note details"
                                               >
                                                 <Edit2 size={16} />
@@ -658,7 +762,7 @@ const AdminDashboard = () => {
                                               <button
                                                 type="button"
                                                 onClick={() => deleteNote(note.id)}
-                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                                 title="Delete note"
                                               >
                                                 <Trash2 size={16} />
@@ -683,41 +787,288 @@ const AdminDashboard = () => {
           </>
         )}
 
+        {activeTab === "practice" && (
+          <>
+            {/* Add Practice Unit Form */}
+            <div className="glass-panel p-6 md:p-8 rounded-3xl mb-10">
+              <h2 className="text-xl font-bold text-heading mb-6 flex items-center gap-2">
+                <Plus className="text-accent" />
+                Add New Practice Unit
+              </h2>
+              <form onSubmit={handleAddPracticeUnit} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelSm}>Unit Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Unit 1 - Chemical Bonding"
+                      value={newPracticeUnit.unit_name}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, unit_name: e.target.value })
+                      }
+                      className={fieldInput}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelSm}>Number of Questions</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 25"
+                      min="1"
+                      value={newPracticeUnit.no_of_questions}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, no_of_questions: e.target.value })
+                      }
+                      className={fieldInput}
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelSm}>Description</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. MCQ practice covering ionic and covalent bonding concepts"
+                    value={newPracticeUnit.description}
+                    onChange={(e) =>
+                      setNewPracticeUnit({ ...newPracticeUnit, description: e.target.value })
+                    }
+                    className={fieldInput}
+                  />
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelSm}>Google Form Link (Practice)</label>
+                    <input
+                      type="url"
+                      placeholder="https://docs.google.com/forms/d/.../viewform"
+                      value={newPracticeUnit.form_link}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, form_link: e.target.value })
+                      }
+                      className={fieldInput}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={labelSm}>Solution PDF Link (Drive)</label>
+                    <input
+                      type="url"
+                      placeholder="https://drive.google.com/file/d/.../view"
+                      value={newPracticeUnit.solution_link}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, solution_link: e.target.value })
+                      }
+                      className={fieldInput}
+                      required
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      disabled={practiceUploading}
+                      className="w-full py-3 bg-accent hover:bg-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-accent/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {practiceUploading ? (
+                        <span className="animate-spin">&#8987;</span>
+                      ) : (
+                        <Plus size={18} />
+                      )}
+                      {practiceUploading ? "Saving..." : "Add Unit"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Practice Units List */}
+            <div className="glass-panel rounded-3xl overflow-hidden">
+              <div className="p-6 border-b border-border flex justify-between items-center">
+                <h3 className="font-bold text-heading">Practice Units</h3>
+                <span className="text-xs text-muted font-bold">
+                  {stats.practiceCount} {stats.practiceCount === 1 ? "unit" : "units"}
+                </span>
+              </div>
+              <div className="divide-y divide-border">
+                {practiceUnits.length === 0 ? (
+                  <div className="p-10 text-center text-muted">
+                    No practice units added yet.
+                  </div>
+                ) : (
+                  practiceUnits.map((unit) => {
+                    const isEditing = editingPracticeId === unit.id;
+                    return (
+                      <div key={unit.id} className="px-6 py-4 hover:bg-surface-hover/50 transition-colors">
+                        {isEditing ? (
+                          <div className="flex flex-col gap-3 p-3 bg-accent/5 rounded-2xl border border-accent/10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className={labelXs}>Unit Name</label>
+                                <input
+                                  type="text"
+                                  value={editPracticeData.unit_name || ""}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, unit_name: e.target.value })
+                                  }
+                                  className={editInput}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className={labelXs}>No. of Questions</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={editPracticeData.no_of_questions || ""}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, no_of_questions: e.target.value })
+                                  }
+                                  className={editInput}
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <label className={labelXs}>Description</label>
+                              <input
+                                type="text"
+                                value={editPracticeData.description || ""}
+                                onChange={(e) =>
+                                  setEditPracticeData({ ...editPracticeData, description: e.target.value })
+                                }
+                                className={editInput}
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className={labelXs}>Google Form Link</label>
+                                <input
+                                  type="url"
+                                  value={editPracticeData.form_link || ""}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, form_link: e.target.value })
+                                  }
+                                  className={editInput}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className={labelXs}>Solution PDF Link</label>
+                                <input
+                                  type="url"
+                                  value={editPracticeData.solution_link || ""}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, solution_link: e.target.value })
+                                  }
+                                  className={editInput}
+                                  required
+                                />
+                              </div>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                              <button
+                                type="button"
+                                onClick={cancelEditPractice}
+                                className="px-3 py-1.5 bg-surface-hover hover:bg-surface text-text font-bold rounded-lg text-xs transition-all flex items-center gap-1"
+                              >
+                                <X size={12} />
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={saveEditPractice}
+                                className="px-3 py-1.5 bg-accent hover:bg-dark text-white font-bold rounded-lg text-xs transition-all flex items-center gap-1 shadow-md shadow-accent/10"
+                              >
+                                <Save size={12} />
+                                Save
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="p-2 bg-accent/10 text-accent rounded-lg">
+                                <ClipboardList size={18} />
+                              </span>
+                              <div>
+                                <div className="font-semibold text-heading">{unit.unit_name}</div>
+                                <div className="flex gap-2 items-center mt-0.5">
+                                  {unit.description && (
+                                    <span className="text-xs text-muted truncate max-w-xs">
+                                      {unit.description}
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-bold">
+                                    {unit.no_of_questions} Q
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditPractice(unit)}
+                                className="p-1.5 text-muted hover:text-accent hover:bg-accent/5 rounded-lg transition-colors"
+                                title="Edit practice unit"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deletePracticeUnit(unit.id)}
+                                className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                                title="Delete practice unit"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
         {activeTab === "demos" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="glass-panel rounded-3xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                  <tr className="bg-surface-hover border-b border-border">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Student
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Details
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Contact
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-border">
                   {demoRequests.map((req) => (
                     <tr
                       key={req.id}
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="hover:bg-surface-hover/50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-bold text-dark">{req.name}</div>
-                        <div className="text-xs text-gray-400">{req.city}</div>
+                        <div className="font-bold text-heading">{req.name}</div>
+                        <div className="text-xs text-muted">{req.city}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold">
+                        <div className="text-sm font-semibold text-text">
                           {req.standard} Standard
                         </div>
-                        <div className="text-xs text-primary">
+                        <div className="text-xs text-accent">
                           {req.board} Board | {req.group_name}
                         </div>
                       </td>
@@ -725,12 +1076,12 @@ const AdminDashboard = () => {
                         <a
                           href={`https://wa.me/91${req.whatsapp}`}
                           target="_blank"
-                          className="flex items-center gap-2 text-green-600 font-bold hover:underline"
+                          className="flex items-center gap-2 text-green-400 font-bold hover:underline"
                         >
                           <span>📱</span> {req.whatsapp}
                         </a>
                       </td>
-                      <td className="px-6 py-4 text-xs text-gray-400">
+                      <td className="px-6 py-4 text-xs text-muted">
                         {new Date(req.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -739,7 +1090,7 @@ const AdminDashboard = () => {
                     <tr>
                       <td
                         colSpan="4"
-                        className="px-6 py-10 text-center text-gray-400"
+                        className="px-6 py-10 text-center text-muted"
                       >
                         No demo requests yet.
                       </td>
@@ -752,36 +1103,36 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "messages" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="glass-panel rounded-3xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                  <tr className="bg-surface-hover border-b border-border">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Sender
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Message Details
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Contact
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">
+                    <th className="px-6 py-4 text-xs font-bold text-muted uppercase">
                       Date
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-border">
                   {contactMessages.map((msg) => (
                     <tr
                       key={msg.id}
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="hover:bg-surface-hover/50 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <div className="font-bold text-dark">{msg.name}</div>
+                        <div className="font-bold text-heading">{msg.name}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-gray-600 text-sm max-w-md break-words italic">
+                        <p className="text-muted text-sm max-w-md break-words italic">
                           "{msg.message}"
                         </p>
                       </td>
@@ -791,19 +1142,19 @@ const AdminDashboard = () => {
                             href={`https://wa.me/91${msg.email}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-green-600 font-bold hover:underline text-sm"
+                            className="flex items-center gap-2 text-green-400 font-bold hover:underline text-sm"
                           >
                             <span>📱</span> {msg.email}
                           </a>
                           <a
                             href={`tel:${msg.email}`}
-                            className="text-xs text-gray-400 hover:text-primary transition-colors"
+                            className="text-xs text-muted hover:text-accent transition-colors"
                           >
                             📞 Call: {msg.email}
                           </a>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs text-gray-400">
+                      <td className="px-6 py-4 text-xs text-muted">
                         {new Date(msg.created_at).toLocaleDateString()}
                       </td>
                     </tr>
@@ -812,7 +1163,7 @@ const AdminDashboard = () => {
                     <tr>
                       <td
                         colSpan="4"
-                        className="px-6 py-10 text-center text-gray-400"
+                        className="px-6 py-10 text-center text-muted"
                       >
                         No messages yet.
                       </td>

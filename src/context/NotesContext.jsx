@@ -12,6 +12,7 @@ const NotesContext = createContext();
 
 export const NotesProvider = ({ children }) => {
   const [notes, setNotes] = useState([]);
+  const [practiceUnits, setPracticeUnits] = useState([]);
   const [demoRequests, setDemoRequests] = useState([]);
   const [contactMessages, setContactMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,20 @@ export const NotesProvider = ({ children }) => {
       setNotes(data || []);
     } catch (error) {
       console.error("Error fetching notes:", error.message);
+    }
+  }, []);
+
+  const fetchPracticeUnits = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("practice_units")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPracticeUnits(data || []);
+    } catch (error) {
+      console.error("Error fetching practice units:", error.message);
     }
   }, []);
 
@@ -67,14 +82,14 @@ export const NotesProvider = ({ children }) => {
   useEffect(() => {
     const initFetch = async () => {
       setLoading(true);
-      await fetchNotes();
+      await Promise.all([fetchNotes(), fetchPracticeUnits()]);
       if (isAdminLoggedIn) {
         await Promise.all([fetchDemoRequests(), fetchContactMessages()]);
       }
       setLoading(false);
     };
     initFetch();
-  }, [fetchNotes, fetchDemoRequests, fetchContactMessages, isAdminLoggedIn]);
+  }, [fetchNotes, fetchPracticeUnits, fetchDemoRequests, fetchContactMessages, isAdminLoggedIn]);
 
   const login = (email, password) => {
     if (
@@ -143,6 +158,56 @@ export const NotesProvider = ({ children }) => {
     }
   };
 
+  const addPracticeUnit = async (unit) => {
+    try {
+      const { data, error } = await supabase
+        .from("practice_units")
+        .insert([unit])
+        .select();
+
+      if (error) throw error;
+      setPracticeUnits((prev) => [data[0], ...prev]);
+      return { success: true };
+    } catch (error) {
+      console.error("Error adding practice unit:", error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updatePracticeUnit = async (id, updatedUnit) => {
+    try {
+      const { error } = await supabase
+        .from("practice_units")
+        .update(updatedUnit)
+        .eq("id", id);
+
+      if (error) throw error;
+      setPracticeUnits((prev) =>
+        prev.map((unit) =>
+          unit.id === id ? { ...unit, ...updatedUnit } : unit,
+        ),
+      );
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating practice unit:", error.message);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deletePracticeUnit = async (id) => {
+    if (window.confirm("Are you sure you want to delete this practice unit?")) {
+      try {
+        const { error } = await supabase.from("practice_units").delete().eq("id", id);
+        if (error) throw error;
+        setPracticeUnits((prev) => prev.filter((unit) => unit.id !== id));
+        return { success: true };
+      } catch (error) {
+        console.error("Error deleting practice unit:", error.message);
+        return { success: false, error: error.message };
+      }
+    }
+  };
+
   const submitDemoRequest = async (request) => {
     try {
       const { error } = await supabase.from("demo_requests").insert([request]);
@@ -171,6 +236,7 @@ export const NotesProvider = ({ children }) => {
     <NotesContext.Provider
       value={{
         notes,
+        practiceUnits,
         demoRequests,
         contactMessages,
         loading,
@@ -180,10 +246,14 @@ export const NotesProvider = ({ children }) => {
         addNote,
         updateNote,
         deleteNote,
+        addPracticeUnit,
+        updatePracticeUnit,
+        deletePracticeUnit,
         submitDemoRequest,
         submitContactMessage,
         refreshData: () => {
           fetchNotes();
+          fetchPracticeUnits();
           if (isAdminLoggedIn) {
             fetchDemoRequests();
             fetchContactMessages();

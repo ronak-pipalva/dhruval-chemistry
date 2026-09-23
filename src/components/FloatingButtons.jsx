@@ -38,7 +38,7 @@ const FloatingButtons = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.5, y: 20 }}
             onClick={scrollToTop}
-            className="w-12 h-12 bg-white text-primary border-2 border-primary rounded-full flex items-center justify-center shadow-lg hover:bg-primary hover:text-white transition-all duration-300"
+            className="w-12 h-12 bg-surface-solid text-accent border-2 border-accent rounded-full flex items-center justify-center shadow-lg hover:bg-accent hover:text-white transition-all duration-300"
             aria-label="Back to top"
           >
             <ArrowUp size={24} />
@@ -57,7 +57,7 @@ const FloatingButtons = () => {
         aria-label="Contact on WhatsApp"
       >
         <MessageCircle size={30} />
-        <span className="absolute right-full mr-3 bg-white text-gray-800 text-xs font-bold py-1.5 px-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border">
+        <span className="absolute right-full mr-3 bg-surface-solid text-text text-xs font-bold py-1.5 px-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-border">
           Chat with Dhruval Sir
         </span>
       </motion.a>

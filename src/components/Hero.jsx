@@ -1,8 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { teacher } from "../data/teacherData";
+import { useTheme } from "../context/ThemeContext";
 
 const Hero = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [typedText, setTypedText] = useState("");
   const subjects = useMemo(
     () => ["Organic Chemistry", "Inorganic Chemistry", "Physical Chemistry"],
@@ -69,7 +72,11 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center pt-20 pb-12 md:pb-0 overflow-hidden bg-gradient-to-br from-dark via-[#0a5c5e] to-primary"
+      className={`relative min-h-screen flex items-center pt-20 pb-12 md:pb-0 overflow-hidden ${
+        isDark
+          ? "bg-gradient-to-br from-[#0a1128] via-[#0f1e3d] to-[#0a1f3d]"
+          : "bg-gradient-to-br from-light-accent via-white to-[#e8f5f5]"
+      }`}
     >
       {/* Animated Background Elements */}
       <div className="absolute inset-0 pointer-events-none">
@@ -101,7 +108,7 @@ const Hero = () => {
         {chemistryElements.map((el, i) => (
           <motion.div
             key={i}
-            className="absolute text-white/20 font-mono text-xl md:text-3xl font-bold"
+            className={`absolute font-mono text-xl md:text-3xl font-bold ${isDark ? "text-white/20" : "text-accent/20"}`}
             style={{ top: el.top, left: el.left }}
             animate={{
               opacity: [0.1, 0.3, 0.1],
@@ -118,8 +125,8 @@ const Hero = () => {
         ))}
 
         {/* Atom Orbit Circles */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-white/5 rounded-full animate-spin-slow" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-white/5 rounded-full animate-[spin_12s_linear_infinite_reverse]" />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border rounded-full animate-spin-slow ${isDark ? "border-white/5" : "border-accent/10"}`} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border rounded-full animate-[spin_12s_linear_infinite_reverse] ${isDark ? "border-white/5" : "border-accent/10"}`} />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 z-10 grid md:grid-cols-2 gap-6 lg:gap-12 items-center">
@@ -129,27 +136,27 @@ const Hero = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="inline-block px-4 py-1 rounded-full bg-accent/20 border border-accent/30 text-accent font-semibold mb-6">
+          <div className={`inline-block px-4 py-1 rounded-full border font-semibold mb-6 ${isDark ? "bg-accent/20 border-accent/30 text-accent" : "bg-accent/10 border-accent/30 text-accent"}`}>
             <span className="animate-pulse mr-2">●</span> {typedText}
             <span className="ml-1 border-r-2 border-accent animate-ping" />
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+          <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight ${isDark ? "text-white" : "text-heading"}`}>
             {teacher.tagline}
           </h1>
-          <p className="text-lg md:text-xl text-light-accent/80 mb-8 max-w-lg leading-relaxed">
+          <p className={`text-lg md:text-xl mb-8 max-w-lg leading-relaxed ${isDark ? "text-white/80" : "text-muted"}`}>
             M.Sc Chemistry | B.Ed | 2+ Years Experience | Rajkot, Gujarat.
             Providing top-quality education for 11th & 12th Standard students.
           </p>
           <div className="flex flex-wrap gap-4">
             <button
               onClick={() => scrollToSection("demo")}
-              className="px-8 py-4 bg-accent hover:bg-white hover:text-primary text-white font-bold rounded-full transition-all duration-300 shadow-lg shadow-accent/20 flex items-center gap-2"
+              className="px-8 py-4 bg-accent hover:bg-white hover:text-accent text-white font-bold rounded-full transition-all duration-300 shadow-lg shadow-accent/20 flex items-center gap-2"
             >
               📅 Book Free Demo
             </button>
             <button
               onClick={() => scrollToSection("contact")}
-              className="px-8 py-4 border-2 border-white/30 hover:border-white text-white font-bold rounded-full transition-all duration-300"
+              className={`px-8 py-4 border-2 font-bold rounded-full transition-all duration-300 ${isDark ? "border-white/30 hover:border-white text-white" : "border-accent/40 hover:border-accent text-heading"}`}
             >
               📞 Contact Me
             </button>
@@ -163,13 +170,13 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="relative flex flex-col items-center justify-center gap-6"
         >
-          <div className="relative w-56 h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full p-2 border-2 border-accent/30">
+          <div className={`relative w-56 h-56 md:w-64 md:h-64 lg:w-80 lg:h-80 rounded-full p-2 border-2 border-accent/30`}>
             <div className="absolute inset-0 rounded-full border-2 border-accent border-dashed animate-spin-slow opacity-50" />
-            <div className="absolute -inset-4 rounded-full border border-white/10 animate-[ping_4s_linear_infinite]" />
+            <div className={`absolute -inset-4 rounded-full border animate-[ping_4s_linear_infinite] ${isDark ? "border-white/10" : "border-accent/10"}`} />
             <img
               src={teacher.photo}
               alt={teacher.name}
-              className="w-full h-full object-cover rounded-full border-4 border-white shadow-2xl"
+              className={`w-full h-full object-cover rounded-full border-4 shadow-2xl ${isDark ? "border-white" : "border-white"}`}
               onError={(e) => {
                 e.target.src =
                   "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800";
@@ -177,11 +184,11 @@ const Hero = () => {
             />
           </div>
 
-          <div className="text-center bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-2xl shadow-xl max-w-xs transition-all hover:scale-105 duration-300">
+          <div className={`text-center backdrop-blur-md px-6 py-3 rounded-2xl shadow-xl max-w-xs transition-all hover:scale-105 duration-300 ${isDark ? "bg-white/10 border border-white/20" : "bg-white/70 border border-accent/20"}`}>
             <div className="text-xs font-bold uppercase tracking-wider text-accent">
               Founder of ChemConcept
             </div>
-            <div className="text-lg font-extrabold text-white mt-1">
+            <div className={`text-lg font-extrabold mt-1 ${isDark ? "text-white" : "text-heading"}`}>
               Dhruval Talsaniya
             </div>
           </div>

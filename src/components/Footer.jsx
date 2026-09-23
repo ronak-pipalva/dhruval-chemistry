@@ -24,7 +24,7 @@ const Footer = () => {
     { name: "Home", href: "#home" },
     { name: "About", href: "#about" },
     { name: "Experience", href: "#experience" },
-    { name: "Notes", href: "#notes" },
+    { name: "Study Material", href: "#notes" },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -48,15 +48,15 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-dark text-white pt-16 pb-8">
+    <footer className="bg-bg-alt text-text pt-16 pb-8">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Logo and Tagline */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
-              <span className="text-3xl text-primary flex-shrink-0">⚗️</span>
+              <span className="text-3xl text-accent flex-shrink-0">⚗️</span>
               <div className="flex flex-col items-start leading-none select-none text-left">
-                <span className="font-heading font-extrabold text-xl md:text-2xl tracking-tight text-white">
+                <span className="font-heading font-extrabold text-xl md:text-2xl tracking-tight text-heading">
                   Chem<span className="text-accent">Concept</span>
                 </span>
                 <div className="h-[1.5px] w-full bg-gold my-0.5 rounded-full" />
@@ -65,7 +65,7 @@ const Footer = () => {
                 </span>
               </div>
             </div>
-            <p className="text-gray-400 max-w-sm leading-relaxed">
+            <p className="text-muted max-w-sm leading-relaxed">
               {teacher.tagline}. Dedicated to making chemistry accessible and
               engaging for students of all levels.
             </p>
@@ -74,7 +74,7 @@ const Footer = () => {
                 <a
                   key={i}
                   href={social.href}
-                  className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300"
+                  className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center hover:bg-accent hover:text-white transition-all duration-300"
                 >
                   {social.icon}
                 </a>
@@ -84,14 +84,14 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-6">Quick Navigation</h3>
+            <h3 className="text-xl font-bold text-heading mb-6">Quick Navigation</h3>
             <ul className="space-y-4">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <a
                     href={link.href}
                     onClick={(e) => scrollToSection(e, link.href)}
-                    className="text-gray-400 hover:text-primary transition-colors duration-300"
+                    className="text-muted hover:text-accent transition-colors duration-300"
                   >
                     {link.name}
                   </a>
@@ -102,26 +102,26 @@ const Footer = () => {
 
           {/* Contact Details */}
           <div>
-            <h3 className="text-xl font-bold mb-6">Contact Info</h3>
-            <ul className="space-y-4 text-gray-400">
+            <h3 className="text-xl font-bold text-heading mb-6">Contact Info</h3>
+            <ul className="space-y-4 text-muted">
               <li>
-                <div className="text-white font-semibold mb-1">Address:</div>
+                <div className="text-heading font-semibold mb-1">Address:</div>
                 {teacher.location}
               </li>
               <li>
-                <div className="text-white font-semibold mb-1">Email:</div>
+                <div className="text-heading font-semibold mb-1">Email:</div>
                 <a
                   href={`mailto:${teacher.email}`}
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-accent transition-colors"
                 >
                   {teacher.email}
                 </a>
               </li>
               <li>
-                <div className="text-white font-semibold mb-1">Phone:</div>
+                <div className="text-heading font-semibold mb-1">Phone:</div>
                 <a
                   href={`tel:${teacher.phone}`}
-                  className="hover:text-primary transition-colors"
+                  className="hover:text-accent transition-colors"
                 >
                   +91 {teacher.phone}
                 </a>
@@ -130,8 +130,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm text-center md:text-left">
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-muted text-sm text-center md:text-left">
             © {currentYear} {teacher.name} | Chemistry Educator, Rajkot. All
             Rights Reserved.
           </p>

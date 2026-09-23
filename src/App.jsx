@@ -7,6 +7,7 @@ import About from "./components/About";
 import Experience from "./components/Experience";
 import Education from "./components/Education";
 import Notes from "./components/Notes";
+import PracticeZone from "./components/PracticeZone";
 import WhyChooseMe from "./components/WhyChooseMe";
 import BookDemo from "./components/BookDemo";
 import Contact from "./components/Contact";
@@ -18,7 +19,7 @@ import HealthCheck from "./components/HealthCheck";
 
 function Portfolio() {
   return (
-    <div className="relative">
+    <div className="relative min-h-screen bg-bg text-text transition-colors duration-300">
       <ScrollProgressBar />
       <Navbar />
       <main>
@@ -27,6 +28,7 @@ function Portfolio() {
         <Experience />
         <Education />
         <Notes />
+        <PracticeZone />
         <WhyChooseMe />
         <BookDemo />
         <Contact />

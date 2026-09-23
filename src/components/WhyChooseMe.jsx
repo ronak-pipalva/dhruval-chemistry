@@ -30,9 +30,9 @@ const WhyChooseMe = () => {
   ];
 
   return (
-    <section className="py-20 bg-dark text-white overflow-hidden">
+    <section className="py-20 bg-bg-alt text-text overflow-hidden">
       <div className="container mx-auto px-4 md:px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-heading text-center mb-16">
           Why Students Choose Dhruval Sir
         </h2>
 
@@ -44,13 +44,13 @@ const WhyChooseMe = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent/50 transition-all duration-300 group"
+              className="glass-panel p-8 rounded-2xl hover:border-accent/50 transition-all duration-300 group"
             >
               <div className="w-16 h-16 bg-accent/20 text-accent rounded-xl flex items-center justify-center mb-6 group-hover:bg-accent group-hover:text-white transition-all duration-300">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-              <p className="text-gray-400 leading-relaxed text-sm">
+              <h3 className="text-xl font-bold text-heading mb-4">{feature.title}</h3>
+              <p className="text-muted leading-relaxed text-sm">
                 {feature.description}
               </p>
             </motion.div>

@@ -1,17 +1,25 @@
 import { useState, useEffect, useMemo } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
+  // Text color for nav elements over the hero (non-scrolled state)
+  const heroText = isDark ? "text-white" : "text-heading";
+  const heroLink = isDark ? "text-white/90 hover:text-white" : "text-muted hover:text-accent";
+  const heroIcon = isDark ? "text-white" : "text-heading";
 
   const navLinks = useMemo(
     () => [
       { name: "Home", href: "#home" },
       { name: "About", href: "#about" },
       { name: "Experience", href: "#experience" },
-      { name: "Notes", href: "#notes" },
+      { name: "Study Material", href: "#notes" },
+      { name: "Practice Zone", href: "#practice" },
       { name: "Demo", href: "#demo" },
       { name: "Contact", href: "#contact" },
     ],
@@ -65,9 +73,9 @@ const Navbar = () => {
           onClick={(e) => scrollToSection(e, "#home")}
           className="flex items-center gap-3"
         >
-          <span className="text-3xl text-primary flex-shrink-0">⚗️</span>
+          <span className="text-3xl text-accent flex-shrink-0">⚗️</span>
           <div className="flex flex-col items-start leading-none select-none">
-            <span className={`font-heading font-extrabold text-xl md:text-2xl tracking-tight transition-colors duration-300 ${isScrolled ? "text-dark" : "text-white"}`}>
+            <span className={`font-heading font-extrabold text-xl md:text-2xl tracking-tight transition-colors duration-300 ${isScrolled ? "text-heading" : heroText}`}>
               Chem<span className="text-accent">Concept</span>
             </span>
             <div className="h-[1.5px] w-full bg-gold my-0.5 rounded-full" />
@@ -86,8 +94,8 @@ const Navbar = () => {
               onClick={(e) => scrollToSection(e, link.href)}
               className={`font-semibold text-sm xl:text-base transition-colors ${
                 activeSection === link.href.substring(1)
-                  ? isScrolled ? "text-primary font-bold" : "text-accent font-bold"
-                  : isScrolled ? "text-gray-700 hover:text-primary" : "text-white/90 hover:text-white"
+                  ? isScrolled ? "text-accent font-bold" : "text-accent font-bold"
+                  : isScrolled ? "text-muted hover:text-accent" : heroLink
               }`}
             >
               {link.name}
@@ -100,22 +108,47 @@ const Navbar = () => {
           >
             Book Demo
           </a>
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className={`p-2 rounded-lg transition-colors duration-300 ${
+              isScrolled
+                ? "text-heading hover:bg-surface-hover"
+                : `${heroIcon} ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`
+            }`}
+          >
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
 
         {/* Mobile / Tablet Toggle */}
-        <button
-          className={`lg:hidden transition-colors ${isScrolled ? "text-gray-800" : "text-white"}`}
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle navigation menu"
-        >
-          {isOpen ? <X size={28} /> : <Menu size={28} />}
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            className={`transition-colors p-2 rounded-lg ${
+              isScrolled
+                ? "text-heading hover:bg-surface-hover"
+                : `${heroIcon} ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}`
+            }`}
+          >
+            {theme === "dark" ? <Sun size={24} /> : <Moon size={24} />}
+          </button>
+          <button
+            className={`lg:hidden transition-colors ${isScrolled ? "text-heading" : heroIcon}`}
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile / Tablet Menu Dropdown */}
       <div
-        className={`lg:hidden absolute top-full left-0 w-full bg-white/95 backdrop-blur-md shadow-xl transition-all duration-300 overflow-hidden ${
-          isOpen ? "max-h-96 border-t border-gray-100" : "max-h-0"
+        className={`lg:hidden absolute top-full left-0 w-full glass shadow-xl transition-all duration-300 overflow-hidden ${
+          isOpen ? "max-h-96 border-t border-border" : "max-h-0"
         }`}
       >
         <div className="flex flex-col p-5 gap-4">
@@ -126,8 +159,8 @@ const Navbar = () => {
               onClick={(e) => scrollToSection(e, link.href)}
               className={`text-lg font-semibold transition-colors ${
                 activeSection === link.href.substring(1)
-                  ? "text-primary font-bold"
-                  : "text-gray-700 hover:text-primary"
+                  ? "text-accent font-bold"
+                  : "text-muted hover:text-accent"
               }`}
             >
               {link.name}
