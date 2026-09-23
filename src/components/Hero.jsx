@@ -136,7 +136,7 @@ const Hero = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className={`inline-block px-4 py-1 rounded-full border font-semibold mb-6 ${isDark ? "bg-accent/20 border-accent/30 text-accent" : "bg-accent/10 border-accent/30 text-accent"}`}>
+          <div className={`inline-block px-4 py-1 rounded-full border font-semibold mt-4 md:mt-0 mb-6 ${isDark ? "bg-accent/20 border-accent/30 text-accent" : "bg-accent/10 border-accent/30 text-accent"}`}>
             <span className="animate-pulse mr-2">●</span> {typedText}
             <span className="ml-1 border-r-2 border-accent animate-ping" />
           </div>

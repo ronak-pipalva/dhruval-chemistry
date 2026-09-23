@@ -86,13 +86,13 @@ const Navbar = () => {
         </a>
 
         {/* Desktop Menu */}
-        <div className="hidden lg:flex items-center gap-5 xl:gap-8">
+        <div className="hidden xl:flex items-center gap-5 2xl:gap-8">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={(e) => scrollToSection(e, link.href)}
-              className={`font-semibold text-sm xl:text-base transition-colors ${
+              className={`font-semibold text-sm 2xl:text-base transition-colors ${
                 activeSection === link.href.substring(1)
                   ? isScrolled ? "text-accent font-bold" : "text-accent font-bold"
                   : isScrolled ? "text-muted hover:text-accent" : heroLink
@@ -104,7 +104,7 @@ const Navbar = () => {
           <a
             href="#demo"
             onClick={(e) => scrollToSection(e, "#demo")}
-            className="btn-primary py-2 px-4 xl:px-5 text-sm whitespace-nowrap"
+            className="btn-primary py-2 px-4 2xl:px-5 text-sm whitespace-nowrap"
           >
             Book Demo
           </a>
@@ -123,7 +123,7 @@ const Navbar = () => {
         </div>
 
         {/* Mobile / Tablet Toggle */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="xl:hidden flex items-center gap-2">
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
@@ -136,7 +136,7 @@ const Navbar = () => {
             {theme === "dark" ? <Sun size={24} /> : <Moon size={24} />}
           </button>
           <button
-            className={`lg:hidden transition-colors ${isScrolled ? "text-heading" : heroIcon}`}
+            className={`xl:hidden transition-colors ${isScrolled ? "text-heading" : heroIcon}`}
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle navigation menu"
           >
@@ -147,7 +147,7 @@ const Navbar = () => {
 
       {/* Mobile / Tablet Menu Dropdown */}
       <div
-        className={`lg:hidden absolute top-full left-0 w-full glass shadow-xl transition-all duration-300 overflow-hidden ${
+        className={`xl:hidden absolute top-full left-0 w-full glass shadow-xl transition-all duration-300 overflow-hidden ${
           isOpen ? "max-h-96 border-t border-border" : "max-h-0"
         }`}
       >
