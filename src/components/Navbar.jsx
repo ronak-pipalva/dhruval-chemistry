@@ -147,8 +147,8 @@ const Navbar = () => {
 
       {/* Mobile / Tablet Menu Dropdown */}
       <div
-        className={`xl:hidden absolute top-full left-0 w-full glass shadow-xl transition-all duration-300 overflow-hidden ${
-          isOpen ? "max-h-96 border-t border-border" : "max-h-0"
+        className={`xl:hidden absolute top-full left-0 w-full bg-surface-solid shadow-xl transition-all duration-300 overflow-hidden ${
+          isOpen ? "max-h-[500px] border-t border-border" : "max-h-0"
         }`}
       >
         <div className="flex flex-col p-5 gap-4">
