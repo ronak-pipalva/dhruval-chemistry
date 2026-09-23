@@ -410,7 +410,7 @@ const AdminDashboard = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className={labelSm}>
-                      Standard
+                      Standard <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={newNote.standard}
@@ -425,7 +425,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className={labelSm}>
-                      Medium
+                      Medium <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={newNote.medium}
@@ -441,7 +441,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className={labelSm}>
-                      Chapter Name
+                      Chapter Name <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={chapterInputMode === "select" ? newNote.chapter : "new"}
@@ -485,7 +485,7 @@ const AdminDashboard = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className={labelSm}>
-                      Display File Name
+                      Display File Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -500,7 +500,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <label className={labelSm}>
-                      Google Drive Link
+                      Google Drive Link <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="url"
@@ -798,7 +798,7 @@ const AdminDashboard = () => {
               <form onSubmit={handleAddPracticeUnit} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className={labelSm}>Unit Name</label>
+                    <label className={labelSm}>Unit Name <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       placeholder="e.g. Unit 1 - Chemical Bonding"
@@ -811,7 +811,7 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className={labelSm}>Number of Questions</label>
+                    <label className={labelSm}>Number of Questions <span className="text-red-500">*</span></label>
                     <input
                       type="number"
                       placeholder="e.g. 25"
@@ -839,7 +839,7 @@ const AdminDashboard = () => {
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className={labelSm}>Google Form Link (Practice)</label>
+                    <label className={labelSm}>Google Form Link (Practice) <span className="text-red-500">*</span></label>
                     <input
                       type="url"
                       placeholder="https://docs.google.com/forms/d/.../viewform"
@@ -852,7 +852,7 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className={labelSm}>Solution PDF Link (Drive)</label>
+                    <label className={labelSm}>Solution PDF Link (Drive) <span className="text-red-500">*</span></label>
                     <input
                       type="url"
                       placeholder="https://drive.google.com/file/d/.../view"

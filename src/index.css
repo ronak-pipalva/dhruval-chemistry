@@ -74,6 +74,10 @@
     color: var(--text);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
+  select option {
+    background-color: var(--bg-alt);
+    color: var(--text);
+  }
   h1,
   h2,
   h3,
