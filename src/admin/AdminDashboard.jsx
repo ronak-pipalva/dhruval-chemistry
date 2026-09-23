@@ -86,6 +86,8 @@ const AdminDashboard = () => {
     no_of_questions: "",
     form_link: "",
     solution_link: "",
+    board: "Board",
+    standard: "12th",
   });
   const [practiceUploading, setPracticeUploading] = useState(false);
   const [editingPracticeId, setEditingPracticeId] = useState(null);
@@ -206,6 +208,8 @@ const AdminDashboard = () => {
         no_of_questions: parseInt(newPracticeUnit.no_of_questions, 10),
         form_link: newPracticeUnit.form_link.trim(),
         solution_link: newPracticeUnit.solution_link.trim(),
+        board: newPracticeUnit.board,
+        standard: newPracticeUnit.standard,
       });
 
       if (result.success) {
@@ -215,6 +219,8 @@ const AdminDashboard = () => {
           no_of_questions: "",
           form_link: "",
           solution_link: "",
+          board: "Board",
+          standard: "12th",
         });
       } else {
         alert("Failed to add practice unit: " + result.error);
@@ -244,6 +250,8 @@ const AdminDashboard = () => {
       no_of_questions: parseInt(editPracticeData.no_of_questions, 10),
       form_link: editPracticeData.form_link?.trim(),
       solution_link: editPracticeData.solution_link?.trim(),
+      board: editPracticeData.board,
+      standard: editPracticeData.standard,
     });
     if (result.success) {
       setEditingPracticeId(null);
@@ -824,6 +832,34 @@ const AdminDashboard = () => {
                       required
                     />
                   </div>
+                  <div>
+                    <label className={labelSm}>Board <span className="text-red-500">*</span></label>
+                    <select
+                      value={newPracticeUnit.board}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, board: e.target.value })
+                      }
+                      className={fieldInput}
+                    >
+                      <option value="Board">Board</option>
+                      <option value="GUJCET">GUJCET</option>
+                      <option value="NEET">NEET</option>
+                      <option value="JEE">JEE</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelSm}>Standard <span className="text-red-500">*</span></label>
+                    <select
+                      value={newPracticeUnit.standard}
+                      onChange={(e) =>
+                        setNewPracticeUnit({ ...newPracticeUnit, standard: e.target.value })
+                      }
+                      className={fieldInput}
+                    >
+                      <option value="11th">11th</option>
+                      <option value="12th">12th</option>
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className={labelSm}>Description</label>
@@ -928,6 +964,34 @@ const AdminDashboard = () => {
                                   required
                                 />
                               </div>
+                              <div>
+                                <label className={labelXs}>Board</label>
+                                <select
+                                  value={editPracticeData.board || "Board"}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, board: e.target.value })
+                                  }
+                                  className={editInput}
+                                >
+                                  <option value="Board">Board</option>
+                                  <option value="GUJCET">GUJCET</option>
+                                  <option value="NEET">NEET</option>
+                                  <option value="JEE">JEE</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className={labelXs}>Standard</label>
+                                <select
+                                  value={editPracticeData.standard || "12th"}
+                                  onChange={(e) =>
+                                    setEditPracticeData({ ...editPracticeData, standard: e.target.value })
+                                  }
+                                  className={editInput}
+                                >
+                                  <option value="11th">11th</option>
+                                  <option value="12th">12th</option>
+                                </select>
+                              </div>
                             </div>
                             <div>
                               <label className={labelXs}>Description</label>
@@ -1001,6 +1065,9 @@ const AdminDashboard = () => {
                                   )}
                                   <span className="text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded font-bold">
                                     {unit.no_of_questions} Q
+                                  </span>
+                                  <span className="text-[10px] bg-surface-hover text-text px-1.5 py-0.5 rounded font-bold border border-border">
+                                    {unit.standard || "12th"} • {unit.board || "Board"}
                                   </span>
                                 </div>
                               </div>
